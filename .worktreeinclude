@@ -1,0 +1,19 @@
+# Ignored local setup files copied into Codex-managed worktrees.
+# Only matching Git-ignored files are copied; file contents stay untracked.
+
+# Local environment overrides for the Gradle services.
+/.env
+/.env.*
+/gateway/.env
+/gateway/.env.*
+/mock-rest-api-server/.env
+/mock-rest-api-server/.env.*
+/karate-tests/.env
+/karate-tests/.env.*
+/report-server/.env
+/report-server/.env.*
+# Ignored service configuration and externally supplied integration JARs.
+/gateway/src/main/resources/application.yml
+/mock-rest-api-server/src/main/resources/application.yml
+/gateway/libs/*.jar
+/mock-rest-api-server/libs/*.jar
