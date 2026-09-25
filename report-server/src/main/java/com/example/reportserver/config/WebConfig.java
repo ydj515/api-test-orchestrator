@@ -1,21 +1,21 @@
 package com.example.reportserver.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.nio.file.Path;
-
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${report.data-dir}")
-    private String dataDir;
+    private final ReportProperties properties;
+
+    public WebConfig(ReportProperties properties) {
+        this.properties = properties;
+    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String location = Path.of(dataDir).toAbsolutePath().toUri().toString();
+        String location = properties.storagePath().toUri().toString();
         if (!location.endsWith("/")) {
             location += "/";
         }

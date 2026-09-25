@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <body>
-    <th:block th:fragment="metaCard">
+    <th:block th:fragment="metaCard(run)">
       <nav class="breadcrumbs" aria-label="현재 위치">
         <a th:href="@{/}">
           서비스 목록
@@ -22,10 +22,10 @@
         <div class="page-heading">
           <h1 class="page-title">
             테스트 실행 상세
-            <span class="badge" th:classappend="${run.failCount == 0 ? 'text-bg-success' : 'text-bg-danger'}" th:text="${run.failCount == 0 ? 'PASS' : 'FAIL'}">
+            <span class="badge" th:classappend="${run.badgeClass}" th:text="${run.status}">
             </span>
           </h1>
-          <a th:if="${run.reportPath != null and !#strings.isEmpty(run.reportPath)}" th:href="${run.reportPath}" target="_blank" rel="noopener" class="report-button">
+          <a th:if="${run.hasReport}" th:href="@{${run.reportPath}}" target="_blank" rel="noopener" class="report-button">
             원본 리포트 열기
           </a>
         </div>
@@ -36,10 +36,10 @@
           <span th:text="${run.source}">
           </span>
           ·
-          <span th:text="${#strings.isEmpty(run.api) ? '전체 API' : run.api}">
+          <span th:text="${run.apiLabel}">
           </span>
           ·
-          <span th:text="${run.startedAt == null ? '시각 정보 없음' : #temporals.format(run.startedAt, 'yyyy-MM-dd HH:mm')}">
+          <span th:text="${run.startedAtLabel}">
           </span>
         </p>
         <p class="run-id" th:text="${run.id}">
@@ -62,13 +62,13 @@
           </span>
           <span>
             소요 시간
-            <strong th:text="${#numbers.formatDecimal(run.durationMs / 1000.0, 1, 1) + 's'}">
+            <strong th:text="${run.durationLabel}">
             </strong>
           </span>
         </div>
       </section>
     </th:block>
-    <th:block th:fragment="filterPanel">
+    <th:block th:fragment="filterPanel(allStatuses, availableKinds)">
       <section class="filter-panel">
         <div class="section-header">
           <h2 class="section-title">
@@ -185,7 +185,7 @@
         </div>
       </section>
     </th:block>
-    <th:block th:fragment="casesSection">
+    <th:block th:fragment="casesSection(cases)">
       <div id="emptyState" class="empty-state" style="display:none">
         조건과 일치하는 테스트 케이스가 없습니다.
       </div>
@@ -212,20 +212,20 @@
               <tbody>
                 <tr th:each="c : ${cases}" th:attr="data-status=${c.status != null ? c.status.name() : ''},data-kind=${c.kind != null ? c.kind.name() : ''},data-kind-label=${c.kind != null ? c.kind.label : ''},data-api=${c.api != null ? c.api : ''},data-name=${c.name != null ? c.name : ''},data-scenario-name=${c.scenarioName != null ? c.scenarioName : ''},data-endpoint=${c.endpoint != null ? c.endpoint : ''},data-method=${c.httpMethod != null ? c.httpMethod : ''},data-http-status=${c.httpStatus > 0 ? c.httpStatus : ''},data-failure=${c.failureMsg}">
                   <td>
-                    <span class="badge" th:classappend="${c.status == null ? 'text-bg-secondary' : (c.status.name() == 'FAIL' ? 'text-bg-danger' : 'text-bg-success')}" th:text="${c.status == null ? '알 수 없음' : c.status}">
+                    <span class="badge" th:classappend="${c.badgeClass}" th:text="${c.statusLabel}">
                     </span>
                   </td>
                   <td>
-                    <button type="button" class="case-select" aria-controls="caseInspector" aria-pressed="false" th:text="${c.name != null ? c.name : '이름 없는 케이스'}">
+                    <button type="button" class="case-select" aria-controls="caseInspector" aria-pressed="false" th:text="${c.nameLabel}">
                     </button>
                     <span class="case-api" th:text="${c.api}">
                     </span>
-                    <span class="scenario-name" th:if="${c.scenarioName != null and c.scenarioName != c.name}" th:text="${c.scenarioName}">
+                    <span class="scenario-name" th:if="${c.hasDistinctScenario}" th:text="${c.scenarioName}">
                     </span>
                   </td>
-                  <td th:text="${c.httpStatus > 0 ? c.httpStatus : '—'}">
+                  <td th:text="${c.httpStatusLabel}">
                   </td>
-                  <td class="duration" th:text="${c.durationMs > 0 ? #numbers.formatDecimal(c.durationMs / 1000.0, 1, 1) + 's' : '—'}">
+                  <td class="duration" th:text="${c.durationLabel}">
                   </td>
                 </tr>
               </tbody>

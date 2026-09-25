@@ -88,14 +88,14 @@
               <td th:text="${svc.apiCount}">
               </td>
               <td>
-                <span class="last-run" th:if="${svc.lastRunAt != null}" th:text="${#temporals.format(svc.lastRunAt, 'yyyy-MM-dd HH:mm')}">
+                <span class="last-run" th:if="${svc.lastRunAt != null}" th:text="${svc.lastRunLabel}">
                 </span>
                 <span class="muted" th:unless="${svc.lastRunAt != null}">
                   실행 이력 없음
                 </span>
               </td>
               <td>
-                <span class="badge" th:classappend="${svc.lastStatus == null ? 'text-bg-secondary' : (svc.lastStatus.name() == 'FAIL' ? 'text-bg-danger' : 'text-bg-success')}" th:text="${svc.lastStatus == null ? '미실행' : svc.lastStatus}">
+                <span class="badge" th:classappend="${svc.badgeClass}" th:text="${svc.statusLabel}">
                 </span>
               </td>
               <td>

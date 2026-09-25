@@ -1,18 +1,12 @@
 plugins {
-    java
-    id("org.springframework.boot") version "3.5.0"
-    id("io.spring.dependency-management") version "1.1.7"
+    id("orchestrator.java-conventions")
+    alias(libs.plugins.spring.boot.report)
+    alias(libs.plugins.dependency.management)
 }
 
 group = "com.example"
 version = "0.0.1-SNAPSHOT"
 description = "report-server"
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
 
 configurations {
     compileOnly {
@@ -25,22 +19,19 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    implementation("org.yaml:snakeyaml")
+    implementation(libs.spring.web)
+    implementation(libs.spring.thymeleaf)
+    implementation(libs.jackson.databind)
+    implementation(libs.jackson.jsr310)
+    implementation(libs.snakeyaml)
 
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testImplementation(libs.spring.test)
+    testRuntimeOnly(libs.junit.launcher)
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
 
 tasks.register<JavaExec>("publishKarate") {
     group = "reporting"

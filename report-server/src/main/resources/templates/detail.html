@@ -9,9 +9,9 @@
 <header th:replace="~{fragments/layout :: detailHeader(${run})}"></header>
 
 <main class="container">
-  <th:block th:replace="~{fragments/run-detail :: metaCard}"></th:block>
-  <th:block th:replace="~{fragments/run-detail :: filterPanel}"></th:block>
-  <th:block th:replace="~{fragments/run-detail :: casesSection}"></th:block>
+  <th:block th:replace="~{fragments/run-detail :: metaCard(${run})}"></th:block>
+  <th:block th:replace="~{fragments/run-detail :: filterPanel(${allStatuses}, ${availableKinds})}"></th:block>
+  <th:block th:replace="~{fragments/run-detail :: casesSection(${cases})}"></th:block>
 </main>
 
 
