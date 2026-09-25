@@ -50,8 +50,9 @@ public class GatewayExceptionHandler {
                                                                         HttpServletRequest request) {
         String message = "HTTP method not supported: " + ex.getMethod();
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED);
-        if (ex.getSupportedMethods() != null && ex.getSupportedMethods().length > 0) {
-            responseBuilder.header(HttpHeaders.ALLOW, String.join(", ", ex.getSupportedMethods()));
+        String[] supportedMethods = ex.getSupportedMethods();
+        if (supportedMethods != null && supportedMethods.length > 0) {
+            responseBuilder.header(HttpHeaders.ALLOW, String.join(", ", supportedMethods));
         }
         return responseBuilder
                 .body(errorBody("METHOD_NOT_ALLOWED", message, request));

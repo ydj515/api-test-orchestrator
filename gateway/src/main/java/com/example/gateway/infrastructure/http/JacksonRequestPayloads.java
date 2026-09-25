@@ -18,7 +18,7 @@ public class JacksonRequestPayloads implements RequestPayloads {
     private final ObjectMapper objectMapper;
 
     public JacksonRequestPayloads(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+        this.objectMapper = objectMapper.copy();
     }
 
     public URI targetUri(ApiRoute route, String plainBody) {

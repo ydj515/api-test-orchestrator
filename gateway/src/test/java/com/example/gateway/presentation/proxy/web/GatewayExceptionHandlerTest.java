@@ -67,6 +67,15 @@ class GatewayExceptionHandlerTest {
     }
 
     @Test
+    void shouldOmitAllowHeaderWhenSupportedMethodsAreUnknown() {
+        var result = new GatewayExceptionHandler().handleMethodNotSupported(
+                new org.springframework.web.HttpRequestMethodNotSupportedException("GET"),
+                new org.springframework.mock.web.MockHttpServletRequest());
+        org.assertj.core.api.Assertions.assertThat(result.getStatusCode().value()).isEqualTo(405);
+        org.assertj.core.api.Assertions.assertThat(result.getHeaders()).doesNotContainKey(HttpHeaders.ALLOW);
+    }
+
+    @Test
     void shouldReturn503WhenUpstreamIsUnavailable() throws Exception {
         when(gatewayProxyService.proxyPost(anyString(), anyString(), anyString(), anyString()))
                 .thenThrow(new ResourceAccessException("I/O error on POST request"));
