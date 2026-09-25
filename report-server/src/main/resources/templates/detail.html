@@ -2,22 +2,22 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <th:block th:replace="~{fragments/layout :: headContent(${run.id + ' — API Test Report'})}"></th:block>
-  <link rel="stylesheet" th:href="@{/css/run-detail.css(v='20260501-1')}">
+  <link rel="stylesheet" th:href="@{/css/run-detail.css(v='20260925-1')}">
 </head>
 <body>
 
 <header th:replace="~{fragments/layout :: detailHeader(${run})}"></header>
 
-<main class="container py-4">
+<main class="container">
   <th:block th:replace="~{fragments/run-detail :: metaCard}"></th:block>
   <th:block th:replace="~{fragments/run-detail :: filterPanel}"></th:block>
   <th:block th:replace="~{fragments/run-detail :: casesSection}"></th:block>
 </main>
 
-<th:block th:replace="~{fragments/run-detail :: failurePopover}"></th:block>
+
 <script id="runDetailPageData" type="application/json" th:utext="${availableApisJson}">[]</script>
 <th:block th:replace="~{fragments/layout :: bootstrapScript}"></th:block>
-<script th:src="@{/js/run-detail.js(v='20260501-2')}"></script>
+<script th:src="@{/js/run-detail.js(v='20260925-1')}"></script>
 
 </body>
 </html>

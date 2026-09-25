@@ -1,5 +1,6 @@
 (function () {
   const form = document.getElementById("historyFilterForm");
+  const feedback = document.getElementById("historyFilterFeedback");
   const resetBtn = document.getElementById("historyResetFilterBtn");
   const table = document.getElementById("historyRunsTable");
   const countEl = document.getElementById("historyRunCount");
@@ -222,6 +223,8 @@
       return Promise.resolve();
     }
     if (!metadataLoadPromise) {
+      form.setAttribute("aria-busy", "true");
+      if (feedback) feedback.textContent = "검색 정보를 불러오는 중입니다.";
       metadataLoadPromise = fetch(metadataUrl + location.search, {
         headers: { Accept: "application/json" },
       })
@@ -236,12 +239,15 @@
           applyPageData(pageData);
           rowStates.forEach(applyMetadataToState);
           metadataComplete = true;
+          if (feedback) feedback.textContent = "";
           bootstrapEl.dataset.metadataComplete = "true";
         })
         .catch((error) => {
           metadataLoadPromise = null;
+          if (feedback) feedback.textContent = "검색 정보를 불러오지 못했습니다. 검색창을 다시 선택해 재시도해 주세요.";
           console.warn("히스토리 필터 메타데이터를 불러오지 못했습니다.", error);
-        });
+        })
+        .finally(() => form.setAttribute("aria-busy", "false"));
     }
     return metadataLoadPromise;
   };
@@ -448,15 +454,21 @@
     });
 
     if (countEl) {
-      countEl.textContent = visible + "개 배치 실행";
+      countEl.textContent = visible + "개 실행";
     }
     if (emptyState) {
       emptyState.style.display = visible === 0 ? "" : "none";
+      emptyState.textContent = rowStates.length === 0
+        ? "아직 실행 이력이 없습니다. 테스트 실행 후 리포트를 등록하면 이곳에 표시됩니다."
+        : "조건에 맞는 실행 이력이 없습니다. 필터를 초기화하거나 검색 조건을 바꿔보세요.";
     }
     if (tableWrapper) {
       tableWrapper.classList.toggle("is-hidden", visible === 0);
     }
 
+    document.dispatchEvent(new CustomEvent("report:filtered", { detail: {
+      control: "historyStatusFilter", statuses: visibleStates("status").map((state) => state.status)
+    }}));
     updateUrl();
   };
 

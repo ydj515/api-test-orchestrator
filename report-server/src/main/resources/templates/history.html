@@ -1,326 +1,283 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <th:block th:replace="~{fragments/layout :: headContent(${service + ' 배치 이력 — API Test Report'})}"></th:block>
-  <style>
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 12px;
-      align-items: end;
-    }
-
-    .filter-group--endpoint {
-      grid-column: span 2;
-    }
-
-    .filter-group select,
-    .filter-group input[type="text"],
-    .filter-group input[type="datetime-local"] {
-      padding: 7px 10px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      transition: border-color 0.15s, background 0.15s;
-    }
-
-    .filter-group select:focus,
-    .filter-group input:focus {
-      border-color: #3b82f6;
-      background: #fff;
-    }
-
-    .autocomplete {
-      position: relative;
-    }
-
-    .autocomplete-panel {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 0;
-      right: 0;
-      background: #fff;
-      border: 1px solid #dbe2ea;
-      border-radius: 12px;
-      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      max-height: 280px;
-      overflow-y: auto;
-      z-index: 20;
-    }
-
-    .autocomplete-panel[hidden] {
-      display: none;
-    }
-
-    .autocomplete-option {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 10px 12px;
-      border: none;
-      background: #fff;
-      border-radius: 10px;
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.15s;
-    }
-
-    .autocomplete-option:hover,
-    .autocomplete-option.is-active {
-      background: #eff6ff;
-    }
-
-    .autocomplete-option-badge {
-      flex: 0 0 auto;
-      padding: 2px 8px;
-      background: #dbeafe;
-      color: #1d4ed8;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 700;
-    }
-
-    .autocomplete-option-text {
-      font-size: 0.84rem;
-      color: #1f2937;
-      font-family: "SFMono-Regular", Consolas, monospace;
-    }
-
-    .autocomplete-empty {
-      padding: 10px 12px;
-      color: #9ca3af;
-      font-size: 0.82rem;
-    }
-
-    .count-sep {
-      color: #d1d5db;
-      margin: 0 3px;
-    }
-
-    .table-wrapper.is-hidden {
-      display: none;
-    }
-
-    @media (max-width: 900px) {
-      .filter-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .filter-group--endpoint {
-        grid-column: auto;
-      }
-    }
-  </style>
-</head>
-<body>
-
-<header th:replace="~{fragments/layout :: serviceHeader(${org}, ${service})}"></header>
-
-<main class="container py-4">
-  <div class="page-title" th:text="${org + ' / ' + service + ' 배치 이력'}"></div>
-
-  <div class="filter-panel">
-    <div class="filter-title">필터</div>
-    <form id="historyFilterForm" method="get" th:action="@{/services/{org}/{service}(org=${org},service=${service})}">
-      <div class="filter-grid">
-        <div class="filter-group">
-          <label for="historyApiFilterInput">API</label>
-          <div class="autocomplete">
-            <input id="historyApiFilterInput"
-                   type="text"
-                   name="api"
-                   class="form-control form-control-sm"
-                   placeholder="API 검색"
-                   autocomplete="off"
-                   th:value="${filter.api}">
-            <div id="historyApiAutocompletePanel" class="autocomplete-panel" hidden></div>
+  <head>
+    <th:block th:replace="~{fragments/layout :: headContent(${service + ' 실행 이력 — API Test Report'})}">
+    </th:block>
+  </head>
+  <body>
+    <header th:replace="~{fragments/layout :: serviceHeader(${org}, ${service})}">
+    </header>
+    <main class="container">
+      <nav class="breadcrumbs" aria-label="현재 위치">
+        <a th:href="@{/}">
+          서비스 목록
+        </a>
+        <span>
+          /
+        </span>
+        <span th:text="${org}">
+        </span>
+        <span>
+          /
+        </span>
+        <span th:text="${service}">
+        </span>
+      </nav>
+      <h1 class="page-title" th:text="${service + ' 실행 이력'}">
+      </h1>
+      <p class="page-description" id="latestRunSummary">
+        실행 결과를 선택해 테스트 케이스를 확인하세요.
+      </p>
+      <div class="filter-panel">
+        <form id="historyFilterForm" method="get" th:action="@{/services/{org}/{service}(org=${org},service=${service})}">
+          <div class="toolbar">
+            <div class="filter-group">
+              <label for="historyApiFilterInput">
+                API
+              </label>
+              <div class="autocomplete">
+                <input id="historyApiFilterInput" type="text" name="api" class="form-control form-control-sm" placeholder="API 검색" autocomplete="off" th:value="${filter.api}">
+                <div id="historyApiAutocompletePanel" class="autocomplete-panel" hidden>
+                </div>
+              </div>
+            </div>
+            <div class="filter-group">
+              <label for="historySourceFilter">
+                소스
+              </label>
+              <select id="historySourceFilter" name="source" class="form-select form-select-sm">
+                <option value="">
+                  전체
+                </option>
+                <option th:each="s : ${allSources}" th:value="${s.name()}" th:text="${s.name()}" th:selected="${filter.source != null and filter.source == s}">
+                </option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="historyPeriod">
+                기간
+              </label>
+              <select id="historyPeriod" class="form-select">
+                <option value="">
+                  전체 기간
+                </option>
+                <option value="7">
+                  최근 7일
+                </option>
+                <option value="30">
+                  최근 30일
+                </option>
+                <option value="custom">
+                  직접 지정
+                </option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <div class="filter-group">
-          <label for="historySourceFilter">소스</label>
-          <select id="historySourceFilter" name="source" class="form-select form-select-sm">
-            <option value="">전체</option>
-            <option th:each="s : ${allSources}"
-                    th:value="${s.name()}"
-                    th:text="${s.name()}"
-                    th:selected="${filter.source != null and filter.source == s}"></option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="historyStatusFilter">상태</label>
-          <select id="historyStatusFilter" name="status" class="form-select form-select-sm">
-            <option value="">전체</option>
-            <option th:each="s : ${allStatuses}"
-                    th:value="${s.name()}"
-                    th:text="${s.name()}"
-                    th:selected="${filter.status != null and filter.status == s}"></option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="historyMethodFilter">메서드</label>
-          <select id="historyMethodFilter" name="method" class="form-select form-select-sm">
-            <option value="">전체</option>
-            <option th:if="${filter.httpMethod != null and !#strings.isEmpty(filter.httpMethod)}"
-                    th:value="${filter.httpMethod}"
-                    th:text="${filter.httpMethod}"
-                    selected></option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="historyHttpStatusFilter">HTTP 상태 코드</label>
-          <select id="historyHttpStatusFilter" name="httpStatus" class="form-select form-select-sm">
-            <option value="">전체</option>
-            <option th:if="${filter.httpStatus != null}"
-                    th:value="${filter.httpStatus}"
-                    th:text="${filter.httpStatus}"
-                    selected></option>
-          </select>
-        </div>
-
-        <div class="filter-group">
-          <label for="historyCaseNameFilter">테스트 케이스 명</label>
-          <div class="autocomplete">
-            <input id="historyCaseNameFilter"
-                   type="text"
-                   name="caseName"
-                   class="form-control form-control-sm"
-                   placeholder="부분 일치"
-                   autocomplete="off"
-                   th:value="${filter.caseName}">
-            <div id="historyCaseNameAutocompletePanel" class="autocomplete-panel" hidden></div>
+          <div class="filter-group" hidden>
+            <label for="historyStatusFilter">
+              상태
+            </label>
+            <select id="historyStatusFilter" name="status" class="form-select form-select-sm">
+              <option value="">
+                전체
+              </option>
+              <option th:each="s : ${allStatuses}" th:value="${s.name()}" th:text="${s.name()}" th:selected="${filter.status != null and filter.status == s}">
+              </option>
+            </select>
           </div>
-        </div>
-
-        <div class="filter-group filter-group--endpoint">
-          <label for="historyEndpointFilter">엔드포인트</label>
-          <div class="autocomplete">
-            <input id="historyEndpointFilter"
-                   type="text"
-                   name="endpoint"
-                   class="form-control form-control-sm"
-                   placeholder="부분 일치"
-                   autocomplete="off"
-                   th:value="${filter.endpoint}">
-            <div id="historyEndpointAutocompletePanel" class="autocomplete-panel" hidden></div>
-          </div>
-        </div>
-
-        <div class="filter-group">
-          <label for="historyFromFilter">시작 시각 (from)</label>
-          <input id="historyFromFilter" type="datetime-local" name="from" class="form-control form-control-sm" th:value="${fromStr}">
-        </div>
-
-        <div class="filter-group">
-          <label for="historyToFilter">종료 시각 (to)</label>
-          <input id="historyToFilter" type="datetime-local" name="to" class="form-control form-control-sm" th:value="${toStr}">
-        </div>
-
-        <div class="filter-actions">
-          <button type="button"
-                  id="historyResetFilterBtn"
-                  class="btn btn-outline-secondary icon-btn icon-btn--with-label"
-                  aria-label="필터 초기화"
-                  title="필터 초기화">
-            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-              <path d="M16.667 10A6.667 6.667 0 1 1 15 5.585" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16.667 3.333v3.334h-3.334" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>필터 초기화</span>
+          <details class="advanced-filters" id="historyAdvanced">
+            <summary>
+              상세 필터
+            </summary>
+            <div class="filter-grid">
+              <div class="filter-group">
+                <label for="historyMethodFilter">
+                  메서드
+                </label>
+                <select id="historyMethodFilter" name="method" class="form-select form-select-sm">
+                  <option value="">
+                    전체
+                  </option>
+                  <option th:if="${filter.httpMethod != null and !#strings.isEmpty(filter.httpMethod)}" th:value="${filter.httpMethod}" th:text="${filter.httpMethod}" selected>
+                  </option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="historyHttpStatusFilter">
+                  HTTP 상태 코드
+                </label>
+                <select id="historyHttpStatusFilter" name="httpStatus" class="form-select form-select-sm">
+                  <option value="">
+                    전체
+                  </option>
+                  <option th:if="${filter.httpStatus != null}" th:value="${filter.httpStatus}" th:text="${filter.httpStatus}" selected>
+                  </option>
+                </select>
+              </div>
+              <div class="filter-group">
+                <label for="historyCaseNameFilter">
+                  테스트 케이스 명
+                </label>
+                <div class="autocomplete">
+                  <input id="historyCaseNameFilter" type="text" name="caseName" class="form-control form-control-sm" placeholder="부분 일치" autocomplete="off" th:value="${filter.caseName}">
+                  <div id="historyCaseNameAutocompletePanel" class="autocomplete-panel" hidden>
+                  </div>
+                </div>
+              </div>
+              <div class="filter-group filter-group--endpoint">
+                <label for="historyEndpointFilter">
+                  엔드포인트
+                </label>
+                <div class="autocomplete">
+                  <input id="historyEndpointFilter" type="text" name="endpoint" class="form-control form-control-sm" placeholder="부분 일치" autocomplete="off" th:value="${filter.endpoint}">
+                  <div id="historyEndpointAutocompletePanel" class="autocomplete-panel" hidden>
+                  </div>
+                </div>
+              </div>
+              <div class="filter-group">
+                <label for="historyFromFilter">
+                  시작 시각 (from)
+                </label>
+                <input id="historyFromFilter" type="datetime-local" name="from" class="form-control form-control-sm" th:value="${fromStr}">
+              </div>
+              <div class="filter-group">
+                <label for="historyToFilter">
+                  종료 시각 (to)
+                </label>
+                <input id="historyToFilter" type="datetime-local" name="to" class="form-control form-control-sm" th:value="${toStr}">
+              </div>
+            </div>
+          </details>
+          <p id="historyFilterFeedback" class="filter-feedback" role="status">
+          </p>
+        </form>
+      </div>
+      <div class="run-navigation">
+        <div class="status-tabs" data-status-control="historyStatusFilter" aria-label="실행 상태 필터">
+          <button type="button" data-status="" aria-pressed="true">
+            전체
+            <span class="tab-count">
+              0
+            </span>
+          </button>
+          <button type="button" data-status="FAIL" aria-pressed="false">
+            실패
+            <span class="tab-count">
+              0
+            </span>
+          </button>
+          <button type="button" data-status="PASS" aria-pressed="false">
+            성공
+            <span class="tab-count">
+              0
+            </span>
           </button>
         </div>
+        <div class="result-header">
+          <span class="muted">
+            최신순
+          </span>
+          <button type="button" class="reset-link" id="historyResetFilterBtn">
+            필터 초기화
+          </button>
+          <span id="historyRunCount" aria-live="polite" class="run-count" th:text="${visibleHistoryCount + '개 실행'}">
+          </span>
+        </div>
       </div>
-    </form>
-  </div>
-
-  <div class="result-header">
-    <span id="historyRunCount" class="run-count" th:text="${visibleHistoryCount + '개 배치 실행'}"></span>
-  </div>
-
-  <div id="historyEmptyState"
-       class="empty-state"
-       th:style="${visibleHistoryCount == 0} ? '' : 'display:none'">
-    조건에 맞는 배치 실행 이력이 없습니다.
-  </div>
-
-  <div class="table-wrapper" th:classappend="${visibleHistoryCount == 0} ? 'is-hidden' : ''">
-    <table id="historyRunsTable" class="table table-hover align-middle mb-0">
-      <thead>
-        <tr>
-          <th>수행 시각</th>
-          <th>소스</th>
-          <th>대상 API</th>
-          <th>전체 / 통과 / 실패</th>
-          <th>소요 시간</th>
-          <th>상태</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr th:each="row : ${historyRows}"
-            th:with="run=${row.run},runStatus=${run.failCount == 0 ? 'PASS' : 'FAIL'}"
-            th:style="${row.visible} ? '' : 'display:none'"
-            th:attr="data-run-id=${run.id},data-source=${run.source != null ? run.source.name() : ''},data-status=${runStatus},data-started-at=${run.startedAt != null ? #temporals.format(run.startedAt, 'yyyy-MM-dd''T''HH:mm:ss') : ''}">
-          <td>
-            <span class="run-time"
-                  th:if="${run.startedAt != null}"
-                  th:text="${#temporals.format(run.startedAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
-            <span class="run-time" th:unless="${run.startedAt != null}" style="color:#d1d5db;">-</span>
-          </td>
-          <td>
-            <span th:if="${run.source != null and run.source.name() == 'KARATE'}" class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle">KARATE</span>
-            <span th:if="${run.source != null and run.source.name() == 'CATS'}" class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle">CATS</span>
-          </td>
-          <td>
-            <span th:if="${run.api != null and !#strings.isEmpty(run.api)}"
-                  class="api-chip badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle text-start" th:text="${run.api}"></span>
-            <span th:unless="${run.api != null and !#strings.isEmpty(run.api)}"
-                  class="api-all small fst-italic text-body-tertiary">전체</span>
-          </td>
-          <td>
-            <span class="small text-nowrap">
-              <span class="fw-semibold text-body-secondary" th:text="${run.totalCount}"></span>
-              <span class="count-sep">/</span>
-              <span class="fw-semibold text-success" th:text="${run.passCount}"></span>
-              <span class="count-sep">/</span>
-              <span class="fw-semibold text-danger" th:text="${run.failCount}"></span>
-            </span>
-          </td>
-          <td>
-            <span class="duration"
-                  th:text="${#numbers.formatDecimal(run.durationMs / 1000.0, 1, 1) + 's'}"></span>
-          </td>
-          <td>
-            <span th:if="${run.failCount == 0}" class="badge rounded-pill text-bg-success">PASS</span>
-            <span th:unless="${run.failCount == 0}" class="badge rounded-pill text-bg-danger">FAIL</span>
-          </td>
-          <td class="text-nowrap">
-            <a th:href="@{/runs/{runId}(runId=${run.id})}" class="detail-button">상세</a>
-            <a th:if="${run.reportPath != null and !#strings.isEmpty(run.reportPath)}"
-               th:href="${run.reportPath}"
-               target="_blank"
-               class="report-button ms-1">리포트</a>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</main>
-
-<script id="historyPageData"
-        type="application/json"
-        th:attr="data-metadata-url=@{/api/services/{org}/{service}/history-metadata(org=${org},service=${service})},data-metadata-complete=${historyMetadataComplete}"
-        th:utext="${historyPageDataJson}">[]</script>
-<th:block th:replace="~{fragments/layout :: bootstrapScript}"></th:block>
-<script th:src="@{/js/history-filters.js(v='20260501-3')}"></script>
-
-</body>
+      <div id="historyEmptyState" class="empty-state" th:style="${visibleHistoryCount == 0} ? '' : 'display:none'">
+        조건에 맞는 실행 이력이 없습니다.
+      </div>
+      <div class="table-wrapper" th:classappend="${visibleHistoryCount == 0} ? 'is-hidden' : ''">
+        <table id="historyRunsTable" class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>
+                결과
+              </th>
+              <th>
+                실행 시각
+              </th>
+              <th>
+                대상 API
+              </th>
+              <th>
+                소스
+              </th>
+              <th>
+                케이스 결과
+              </th>
+              <th>
+                소요 시간
+              </th>
+              <th>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="row : ${historyRows}" th:with="run=${row.run},runStatus=${run.failCount == 0 ? 'PASS' : 'FAIL'}" th:style="${row.visible} ? '' : 'display:none'" th:attr="data-run-id=${run.id},data-source=${run.source != null ? run.source.name() : ''},data-status=${runStatus},data-started-at=${run.startedAt != null ? #temporals.format(run.startedAt, 'yyyy-MM-dd''T''HH:mm:ss') : ''}">
+              <td>
+                <span th:if="${run.failCount == 0}" class="badge rounded-pill text-bg-success">
+                  PASS
+                </span>
+                <span th:unless="${run.failCount == 0}" class="badge rounded-pill text-bg-danger">
+                  FAIL
+                </span>
+              </td>
+              <td>
+                <span class="run-time" th:if="${run.startedAt != null}" th:text="${#temporals.format(run.startedAt, 'yyyy-MM-dd HH:mm')}">
+                </span>
+                <span class="run-time" th:unless="${run.startedAt != null}" style="color:#d1d5db;">
+                  -
+                </span>
+              </td>
+              <td>
+                <span th:if="${run.api != null and !#strings.isEmpty(run.api)}" class="api-chip" th:text="${run.api}">
+                </span>
+                <span th:unless="${run.api != null and !#strings.isEmpty(run.api)}" class="muted">
+                  전체
+                </span>
+              </td>
+              <td>
+                <span th:if="${run.source != null and run.source.name() == 'KARATE'}" class="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle">
+                  KARATE
+                </span>
+                <span th:if="${run.source != null and run.source.name() == 'CATS'}" class="badge rounded-pill bg-info-subtle text-info-emphasis border border-info-subtle">
+                  CATS
+                </span>
+              </td>
+              <td>
+                <span class="text-nowrap">
+                  성공
+                  <span class="fw-semibold text-success" th:text="${run.passCount}">
+                  </span>
+                  <span class="count-sep">
+                    /
+                  </span>
+                  실패
+                  <span th:class="${run.failCount > 0 ? 'fw-semibold text-danger' : 'text-body-secondary'}" th:text="${run.failCount}">
+                  </span>
+                </span>
+              </td>
+              <td>
+                <span class="duration" th:text="${#numbers.formatDecimal(run.durationMs / 1000.0, 1, 1) + 's'}">
+                </span>
+              </td>
+              <td class="text-nowrap">
+                <a th:href="@{/runs/{runId}(runId=${run.id})}" class="detail-button">
+                  결과 보기
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <script id="historyPageData" type="application/json" th:attr="data-metadata-url=@{/api/services/{org}/{service}/history-metadata(org=${org},service=${service})},data-metadata-complete=${historyMetadataComplete}" th:utext="${historyPageDataJson}">
+      []
+    </script>
+    <th:block th:replace="~{fragments/layout :: bootstrapScript}">
+    </th:block>
+    <script th:src="@{/js/history-filters.js(v='20260925-1')}">
+    </script>
+  </body>
 </html>

@@ -18,7 +18,6 @@
   const casesTable = document.getElementById("casesTable");
   const tableWrapper = casesTable ? casesTable.closest(".table-wrapper") : null;
   const rows = casesTable ? Array.from(casesTable.querySelectorAll("tbody tr")) : [];
-  const failurePopover = document.getElementById("failurePopover");
 
   if (!casesTable || !apiPanel || !apiInput) {
     return;
@@ -293,13 +292,6 @@
     config.panel.hidden = false;
   };
 
-  const closeFailurePopover = () => {
-    if (failurePopover) {
-      failurePopover.hidden = true;
-      failurePopover._trigger = null;
-    }
-  };
-
   const updateUrl = () => {
     const next = new URLSearchParams();
     const filters = currentFilters();
@@ -351,6 +343,9 @@
       tableWrapper.style.display = visible === 0 ? "none" : "";
     }
 
+    document.dispatchEvent(new CustomEvent("report:filtered", { detail: {
+      control: "statusFilter", statuses: visibleStates("status").map((state) => state.status)
+    }}));
     updateUrl();
   };
 
@@ -361,38 +356,6 @@
     if (activeConfig && document.activeElement === activeConfig.input) {
       renderAutocomplete(activeConfig);
     }
-  };
-
-  const openFailurePopover = (trigger) => {
-    if (!failurePopover) {
-      return;
-    }
-
-    failurePopover.textContent = trigger.dataset.msg || "";
-    failurePopover.hidden = false;
-    failurePopover._trigger = trigger;
-
-    const rect = trigger.getBoundingClientRect();
-    failurePopover.style.top = "0";
-    failurePopover.style.left = "0";
-
-    const popoverWidth = failurePopover.offsetWidth;
-    const popoverHeight = failurePopover.offsetHeight;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    let top = rect.bottom + 8;
-    let left = rect.left;
-
-    if (left + popoverWidth > viewportWidth - 12) {
-      left = Math.max(8, viewportWidth - popoverWidth - 12);
-    }
-    if (top + popoverHeight > viewportHeight - 12) {
-      top = Math.max(8, rect.top - popoverHeight - 8);
-    }
-
-    failurePopover.style.top = top + "px";
-    failurePopover.style.left = left + "px";
   };
 
   const urlParams = new URLSearchParams(location.search);
@@ -503,7 +466,6 @@
         endpointInput.value = "";
       }
       closePanels();
-      closeFailurePopover();
       refresh();
     });
   }
@@ -519,22 +481,5 @@
       closePanels();
     }
 
-    const failureTrigger = event.target.closest(".failure-msg");
-    if (failureTrigger && failurePopover) {
-      event.stopPropagation();
-      if (!failurePopover.hidden && failurePopover._trigger === failureTrigger) {
-        closeFailurePopover();
-      } else {
-        openFailurePopover(failureTrigger);
-      }
-    } else if (failurePopover && !failurePopover.hidden && !failurePopover.contains(event.target)) {
-      closeFailurePopover();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeFailurePopover();
-    }
   });
 })();

@@ -1,81 +1,120 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <th:block th:replace="~{fragments/layout :: headContent('API Test Report')}"></th:block>
-  <style>
-    .empty-state {
-      background: transparent;
-      box-shadow: none;
-      padding: 80px 0;
-    }
-
-    .service-name {
-      font-weight: 600;
-      color: #1a1d23;
-    }
-
-    .org-label {
-      display: inline-block;
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-right: 6px;
-    }
-
-  </style>
-</head>
-<body>
-
-<header th:replace="~{fragments/layout :: homeHeader}"></header>
-
-<main class="container py-4">
-  <div class="page-title">서비스 목록</div>
-
-  <div th:if="${#lists.isEmpty(services)}" class="empty-state">
-    등록된 테스트 실행 이력이 없습니다.
-  </div>
-
-  <table th:unless="${#lists.isEmpty(services)}" class="table table-hover align-middle mb-0">
-    <thead>
-      <tr>
-        <th>서비스명</th>
-        <th>API 수</th>
-        <th>마지막 수행</th>
-        <th>상태</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr th:each="svc : ${services}">
-        <td>
-          <span class="org-label" th:text="${svc.org}"></span>
-          <span class="service-name" th:text="${svc.service}"></span>
-        </td>
-        <td>
-          <span class="badge rounded-pill text-bg-secondary px-3 py-2" th:text="${svc.apiCount}">0</span>
-        </td>
-        <td>
-          <span class="last-run"
-                th:if="${svc.lastRunAt != null}"
-                th:text="${#temporals.format(svc.lastRunAt, 'yyyy-MM-dd HH:mm:ss')}"></span>
-          <span th:unless="${svc.lastRunAt != null}" class="last-run" style="color:#d1d5db;">-</span>
-        </td>
-        <td>
-          <span th:if="${svc.lastStatus == null}" class="badge rounded-pill text-bg-secondary">-</span>
-          <span th:if="${svc.lastStatus != null and svc.lastStatus.name() == 'PASS'}"
-                class="badge rounded-pill text-bg-success">PASS</span>
-          <span th:if="${svc.lastStatus != null and svc.lastStatus.name() == 'FAIL'}"
-                class="badge rounded-pill text-bg-danger">FAIL</span>
-        </td>
-        <td>
-          <a th:href="@{/services/{org}/{service}(org=${svc.org}, service=${svc.service})}"
-             class="detail-button">상세 보기</a>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</main>
-
-<th:block th:replace="~{fragments/layout :: bootstrapScript}"></th:block>
-
-</body>
+  <head>
+    <th:block th:replace="~{fragments/layout :: headContent('API Test Report')}">
+    </th:block>
+  </head>
+  <body>
+    <header th:replace="~{fragments/layout :: homeHeader}">
+    </header>
+    <main class="container">
+      <h1 class="page-title">
+        서비스별 테스트 현황
+      </h1>
+      <p class="page-description">
+        서비스를 선택해 실행 이력과 결과를 확인하세요.
+      </p>
+      <div class="overview-bar">
+        <div class="summary-strip" aria-label="전체 서비스 요약">
+          <span>
+            전체 서비스
+            <strong th:text="${#lists.size(services)}">
+              0
+            </strong>
+          </span>
+          <span>
+            최근 실행 실패
+            <strong class="text-danger" id="failedServiceCount">
+              0
+            </strong>
+          </span>
+          <span>
+            실행 이력 없음
+            <strong id="unrunServiceCount">
+              0
+            </strong>
+          </span>
+        </div>
+        <div class="toolbar">
+          <div class="filter-group">
+            <label for="serviceSearch">
+              서비스 검색
+            </label>
+            <input class="form-control" id="serviceSearch" type="search" placeholder="서비스명으로 검색하세요">
+          </div>
+          <div class="filter-group">
+            <label for="orgFilter">
+              기관
+            </label>
+            <select class="form-select" id="orgFilter">
+              <option value="">
+                전체 기관
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="servicesTable" class="table">
+          <thead>
+            <tr>
+              <th>
+                서비스
+              </th>
+              <th>
+                API 수
+              </th>
+              <th>
+                최근 실행
+              </th>
+              <th>
+                최근 결과
+              </th>
+              <th>
+                <span class="visually-hidden">
+                  실행 이력
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="svc : ${services}" th:attr="data-org=${svc.org},data-service=${svc.service},data-status=${svc.lastStatus}">
+              <td>
+                <span class="org-label" th:text="${svc.org}">
+                </span>
+                <a class="service-name" th:text="${svc.service}" th:href="@{/services/{org}/{service}(org=${svc.org},service=${svc.service})}">
+                </a>
+              </td>
+              <td th:text="${svc.apiCount}">
+              </td>
+              <td>
+                <span class="last-run" th:if="${svc.lastRunAt != null}" th:text="${#temporals.format(svc.lastRunAt, 'yyyy-MM-dd HH:mm')}">
+                </span>
+                <span class="muted" th:unless="${svc.lastRunAt != null}">
+                  실행 이력 없음
+                </span>
+              </td>
+              <td>
+                <span class="badge" th:classappend="${svc.lastStatus == null ? 'text-bg-secondary' : (svc.lastStatus.name() == 'FAIL' ? 'text-bg-danger' : 'text-bg-success')}" th:text="${svc.lastStatus == null ? '미실행' : svc.lastStatus}">
+                </span>
+              </td>
+              <td>
+                <a class="detail-button" th:href="@{/services/{org}/{service}(org=${svc.org},service=${svc.service})}" th:aria-label="${svc.service + ' 실행 이력 보기'}">
+                  실행 이력 보기
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="serviceEmptyState" class="empty-state" hidden>
+        조건에 맞는 서비스가 없습니다.
+      </div>
+      <p class="page-note" id="serviceResultCount" aria-live="polite">
+        최근 결과는 각 서비스의 마지막 실행 기준입니다.
+      </p>
+    </main>
+    <th:block th:replace="~{fragments/layout :: bootstrapScript}">
+    </th:block>
+  </body>
 </html>
