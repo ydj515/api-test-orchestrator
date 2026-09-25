@@ -23,4 +23,4 @@ echo "  GATEWAY_URL=${GATEWAY_URL}"
 
 rm -rf "$KARATE_BUILD_DIR"
 
-(cd "$ROOT_DIR/karate-tests" && ./gradlew test --rerun-tasks)
+(cd "$ROOT_DIR/karate-tests" && ./gradlew e2eTest)

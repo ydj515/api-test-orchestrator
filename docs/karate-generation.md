@@ -142,7 +142,7 @@ response schema에만 있는 `enum`, `format`, `range`는 요청 negative case�
 
 ```bash
 cd karate-tests
-ORG=orgB SERVICE=visit API=listSites ./gradlew test
+ORG=orgB SERVICE=visit API=listSites ./gradlew e2eTest
 ```
 
 전체 매트릭스 실행과 CATS 실행 방법은 [testing.md](testing.md)를 기준으로 확인합니다. CATS 리포트와 smoke/full 모드 상세 설명은 [cats-report-guide.md](cats-report-guide.md)에 분리되어 있습니다.
