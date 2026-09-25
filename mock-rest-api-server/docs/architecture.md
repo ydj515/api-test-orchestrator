@@ -8,12 +8,13 @@ Simulates the encrypted upstream API that gateway forwards requests to. Allows f
 
 ## Package Layout
 
-```
+```text
 src/main/java/com/example/mockserver/
-├── controller/   # @RestController — mock API endpoints matching gateway routes
-├── service/      # Response generation logic
-├── dto/          # Request / response model classes
-└── exception/    # Error handling, global @ControllerAdvice
+├── presentation/{booking,visit,support,shared}/web/  # HTTP DTOs, mappers and errors
+├── application/{booking,visit,support}/             # Use cases and command/result contracts
+├── domain/booking/                                 # Booking state and capacity rules
+├── domain/shared/                                  # Meaningful business failures
+└── config/                                         # Clock and identifier composition
 ```
 
 ## Expected Request Format
@@ -41,3 +42,11 @@ Gateway will attempt to decrypt `$.data` from this response. If `data` is absent
 ## Manual Request Examples
 
 See `http/mock-rest-api.http` for IntelliJ/VS Code HTTP client examples to test the mock server directly.
+
+## Service State and Time
+
+`CatsBookingService` and `OrgAReservationService` compose separate `BookingOperations` instances.
+The shared implementation does not imply shared reservation state. `RuntimeConfig` supplies a
+`Clock` and UUID supplier; tests replace both with deterministic values. Booking/visit capacity
+checks and state mutations are synchronized within each service store, and repeated cancellation
+or resolution preserves the original result.

@@ -18,7 +18,7 @@ The mock server binds to port `18080` by default. Gateway is configured to forwa
 ## Adding New Mock Endpoints
 
 1. Add a route entry in `gateway/src/main/resources/application-local.yml` pointing to the mock server.
-2. Implement the matching endpoint in `mock-rest-api-server/src/main/java/com/example/mockserver/controller/`.
+2. Implement the matching endpoint in `mock-rest-api-server/src/main/java/com/example/mockserver/presentation/<feature>/web/`.
 3. Add a request example to `http/mock-rest-api.http`.
 4. Add or update an integration test in `MockRestApiServerApplicationTests` (or an equivalent controller test).
 
