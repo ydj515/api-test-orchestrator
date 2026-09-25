@@ -88,14 +88,6 @@ public final class KaratePublishCli {
         return envValue == null ? defaultValue : envValue;
     }
 
-    private static String requiredValue(Map<String, String> options, String optionName, String envName) {
-        String value = value(options, optionName, envName, null);
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("--" + optionName + " or " + envName + " is required");
-        }
-        return value;
-    }
-
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value;
     }

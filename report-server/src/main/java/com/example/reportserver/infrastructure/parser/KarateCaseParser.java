@@ -17,13 +17,11 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class KarateCaseParser {
 
     private static final Pattern HTTP_REQUEST_PATTERN =
@@ -32,6 +30,10 @@ public class KarateCaseParser {
             Pattern.compile("\\d+ < (\\d{3})");
 
     private final ObjectMapper objectMapper;
+
+    public KarateCaseParser(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper.copy();
+    }
 
     public List<TestCase> parse(Path reportDir, String runId, TestCaseGranularity granularity) {
         try (Stream<Path> files = Files.list(reportDir)) {
@@ -146,7 +148,9 @@ public class KarateCaseParser {
     }
 
     private String extractTagValue(List<String> tags, String key) {
-        if (tags == null) return null;
+        if (tags == null) {
+            return null;
+        }
         return tags.stream()
                 .map(this::normalizeTag)
                 .map(tag -> tag.split("=", 2))
@@ -165,7 +169,9 @@ public class KarateCaseParser {
     }
 
     private List<HttpCall> extractHttpCalls(List<KarateFeatureResult.StepResult> stepResults) {
-        if (stepResults == null) return List.of();
+        if (stepResults == null) {
+            return List.of();
+        }
 
         List<HttpCall> calls = new ArrayList<>();
         PendingCall pendingCall = null;
@@ -194,7 +200,9 @@ public class KarateCaseParser {
     }
 
     private HttpInfo extractHttpInfo(KarateFeatureResult.StepResult step) {
-        if (step == null || step.getStepLog() == null) return null;
+        if (step == null || step.getStepLog() == null) {
+            return null;
+        }
 
         String log = step.getStepLog();
         Matcher reqMatcher = HTTP_REQUEST_PATTERN.matcher(log);
@@ -234,7 +242,9 @@ public class KarateCaseParser {
     }
 
     private String extractFailureMsg(List<KarateFeatureResult.StepResult> stepResults) {
-        if (stepResults == null) return null;
+        if (stepResults == null) {
+            return null;
+        }
         return stepResults.stream()
                 .filter(s -> s.getResult() != null && "failed".equals(s.getResult().getStatus()))
                 .map(s -> s.getResult().getError())

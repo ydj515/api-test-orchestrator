@@ -167,16 +167,30 @@ public class RunQueryService {
     }
 
     private boolean matchesRunFilter(TestRun run, RunFilter f) {
-        if (!matches(f.getOrg(), run.getOrg())) return false;
-        if (!matches(f.getService(), run.getService())) return false;
-        if (f.getSource() != null && f.getSource() != run.getSource()) return false;
+        if (!matches(f.getOrg(), run.getOrg())) {
+            return false;
+        }
+        if (!matches(f.getService(), run.getService())) {
+            return false;
+        }
+        if (f.getSource() != null && f.getSource() != run.getSource()) {
+            return false;
+        }
         if (f.getStatus() != null) {
             TestStatus runStatus = run.getFailCount() > 0 ? TestStatus.FAIL : TestStatus.PASS;
-            if (f.getStatus() != runStatus) return false;
+            if (f.getStatus() != runStatus) {
+                return false;
+            }
         }
-        if ((f.getFrom() != null || f.getTo() != null) && run.getStartedAt() == null) return false;
-        if (f.getFrom() != null && run.getStartedAt().isBefore(f.getFrom())) return false;
-        if (f.getTo() != null && run.getStartedAt().isAfter(f.getTo())) return false;
+        if ((f.getFrom() != null || f.getTo() != null) && run.getStartedAt() == null) {
+            return false;
+        }
+        if (f.getFrom() != null && run.getStartedAt().isBefore(f.getFrom())) {
+            return false;
+        }
+        if (f.getTo() != null && run.getStartedAt().isAfter(f.getTo())) {
+            return false;
+        }
         return true;
     }
 
@@ -201,11 +215,21 @@ public class RunQueryService {
     }
 
     private boolean matchesCase(TestCase c, RunFilter f) {
-        if (hasValue(f.getApi()) && !f.getApi().equals(c.getApi())) return false;
-        if (hasValue(f.getHttpMethod()) && !equalsIgnoreCase(f.getHttpMethod(), c.getHttpMethod())) return false;
-        if (f.getHttpStatus() != null && f.getHttpStatus() != c.getHttpStatus()) return false;
-        if (hasValue(f.getCaseName()) && !matchesCaseName(c, f.getCaseName())) return false;
-        if (hasValue(f.getEndpoint()) && !containsIgnoreCase(c.getEndpoint(), f.getEndpoint())) return false;
+        if (hasValue(f.getApi()) && !f.getApi().equals(c.getApi())) {
+            return false;
+        }
+        if (hasValue(f.getHttpMethod()) && !equalsIgnoreCase(f.getHttpMethod(), c.getHttpMethod())) {
+            return false;
+        }
+        if (f.getHttpStatus() != null && f.getHttpStatus() != c.getHttpStatus()) {
+            return false;
+        }
+        if (hasValue(f.getCaseName()) && !matchesCaseName(c, f.getCaseName())) {
+            return false;
+        }
+        if (hasValue(f.getEndpoint()) && !containsIgnoreCase(c.getEndpoint(), f.getEndpoint())) {
+            return false;
+        }
         return true;
     }
 
@@ -213,9 +237,15 @@ public class RunQueryService {
         if (f == null) {
             return true;
         }
-        if (hasValue(f.getApi()) && !containsIgnoreCase(c.getApi(), f.getApi())) return false;
-        if (f.getStatus() != null && f.getStatus() != c.getStatus()) return false;
-        if (f.getKind() != null && f.getKind() != c.getKind()) return false;
+        if (hasValue(f.getApi()) && !containsIgnoreCase(c.getApi(), f.getApi())) {
+            return false;
+        }
+        if (f.getStatus() != null && f.getStatus() != c.getStatus()) {
+            return false;
+        }
+        if (f.getKind() != null && f.getKind() != c.getKind()) {
+            return false;
+        }
         return true;
     }
 

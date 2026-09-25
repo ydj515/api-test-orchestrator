@@ -2,6 +2,7 @@ package com.example.reportserver.infrastructure.persistence;
 
 import com.example.reportserver.application.run.port.out.RunPublicationStore;
 import com.example.reportserver.application.run.result.ParsedRun;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -16,6 +17,8 @@ import java.util.stream.Stream;
 public final class FileRunPublicationStore implements RunPublicationStore {
     private final RunStorageService storage;
 
+    @SuppressFBWarnings(value = "EI_EXPOSE_REP2",
+            justification = "Intentionally shares the storage service owning the configured data directory")
     public FileRunPublicationStore(RunStorageService storage) {
         this.storage = storage;
     }
@@ -66,7 +69,8 @@ public final class FileRunPublicationStore implements RunPublicationStore {
             if (Files.isDirectory(source)) {
                 Files.createDirectories(target);
             } else {
-                Files.createDirectories(target.getParent());
+                Files.createDirectories(java.util.Objects.requireNonNull(target.getParent(),
+                        "Copied file must have a parent directory"));
                 Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
             }
         } catch (IOException e) {

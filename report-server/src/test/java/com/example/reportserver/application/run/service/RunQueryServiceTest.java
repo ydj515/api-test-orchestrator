@@ -448,6 +448,8 @@ class RunQueryServiceTest {
         return baseDir.resolve("catalog.yaml");
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE",
+            justification = "YAML fixtures intentionally use LF on every platform")
     private void writeContract(Path path, String org, String service, List<String> apis) throws Exception {
         StringBuilder paths = new StringBuilder();
         for (String api : apis) {

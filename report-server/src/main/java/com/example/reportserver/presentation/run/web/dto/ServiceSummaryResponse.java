@@ -10,6 +10,10 @@ public record ServiceSummaryResponse(String contractId, String org, String servi
                                      int apiCount,
                                      @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") LocalDateTime lastRunAt,
                                      TestStatus lastStatus, String lastRunId) {
+    public ServiceSummaryResponse {
+        apis = List.copyOf(apis);
+    }
+
     public static ServiceSummaryResponse from(ServiceSummary summary) {
         return new ServiceSummaryResponse(summary.getContractId(), summary.getOrg(), summary.getService(),
                 summary.getApis(), summary.getApiCount(), summary.getLastRunAt(), summary.getLastStatus(),
