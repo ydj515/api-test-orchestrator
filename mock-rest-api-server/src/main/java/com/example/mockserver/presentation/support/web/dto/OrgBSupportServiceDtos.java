@@ -9,6 +9,9 @@ public class OrgBSupportServiceDtos {
     }
 
     public record DeviceListResponse(List<DeviceSummary> items, int page, int size, long total) {
+        public DeviceListResponse {
+            items = List.copyOf(items);
+        }
     }
 
     public record SupportTicketCreateRequest(String deviceId,

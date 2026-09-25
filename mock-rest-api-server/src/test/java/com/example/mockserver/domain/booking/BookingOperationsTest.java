@@ -28,6 +28,19 @@ class BookingOperationsTest {
     private final Supplier<UUID> identifiers = () -> new UUID(0, sequence.incrementAndGet());
 
     @Test
+    void scheduleResultsKeepSnapshotsOfCallerOwnedLists() {
+        var items = new java.util.ArrayList<com.example.mockserver.domain.booking.model.BookingDomainModels.ScheduleItem>();
+        var item = new com.example.mockserver.domain.booking.model.BookingDomainModels.ScheduleItem(
+                "schedule", null, null, "OPEN");
+        items.add(item);
+        var result = new com.example.mockserver.domain.booking.model.BookingDomainModels.ScheduleListResponse("resource", items);
+        items.clear();
+        assertThat(result.items()).containsExactly(item);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> result.items().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
     void usesInjectedTimeAndReleasesInventoryOnlyOnce() {
         BookingOperations bookings = new BookingOperations(clock, identifiers);
         var created = bookings.createReservationModel(request(2));
@@ -57,7 +70,9 @@ class BookingOperationsTest {
         int accepted = 0;
         try (var executor = Executors.newFixedThreadPool(8)) {
             for (var result : executor.invokeAll(requests)) {
-                if (result.get()) accepted++;
+                if (result.get()) {
+                    accepted++;
+                }
             }
         }
         assertThat(accepted).isEqualTo(10);
