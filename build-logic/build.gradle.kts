@@ -30,3 +30,11 @@ val verifyArchitectureRules by tasks.registering(JavaExec::class) {
 tasks.check {
     dependsOn(verifyArchitectureRules)
 }
+
+dependencies {
+    implementation(libs.spotbugs.plugin)
+}
+
+sourceSets.main {
+    java.srcDir("../config/architecture/src/test/java/architecture/policy")
+}

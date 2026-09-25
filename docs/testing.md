@@ -185,3 +185,44 @@ Unknown CATS execution times stay null; malformed or negative durations fail exp
   mixins without changing the shared mapper. CLI publishing uses the same `RunPublisher` as HTTP.
 - Verify all four Karate service selections against isolated local gateway/mock instances; inspect
   each `karate-summary-json.txt` for nonzero scenarios and zero failures.
+
+## Java quality gates
+
+`mise run unit:test` (or `mise exec -- ./gradlew check`) runs the following gates for all four
+modules. Standalone module builds, such as `mise exec -- ./gradlew -p gateway check`, use the
+same convention plugin and configuration. Tool versions live in `gradle/libs.versions.toml`;
+`.dev-standards/config.yml` includes all five tool guides.
+
+| Tool | Gradle tasks | Scope / configuration |
+|---|---|---|
+| Checkstyle | `checkstyleMain`, `checkstyleTest` | Java source; `config/checkstyle/checkstyle.xml` |
+| PMD | `pmdMain`, `pmdTest` | Java source; curated correctness rules in `config/pmd/ruleset.xml` |
+| SpotBugs | `spotbugsMain`, `spotbugsTest` | Compiled classes; `config/spotbugs/exclude-filter.xml` |
+| ArchUnit | `archUnitTest` via `architectureTest` | Layer policy, cycles, import scope and negative fixtures |
+| JaCoCo | `jacocoTestReport`, `jacocoTestCoverageVerification` | Production classes, measured by module unit tests |
+
+Violations fail `check`; warnings are not globally ignored. SpotBugs exceptions identify exact
+classes/methods and bug types, with a reason next to each entry or source annotation: generated builders whose value
+constructors copy collections, internal mutable run carriers, parser wire DTOs, shared service
+constructors, and LF-based YAML fixtures. Filters cover generated accessors/builders/constructors/lambdas;
+handwritten code uses source annotations. Do not add package-wide exclusions to silence findings.
+
+Coverage floors initially prevent regression from the existing tests; they are not an 80% coverage
+claim. Raise the floors in `JavaQuality.java` as tests improve. All production classes remain in
+scope, including controllers, configuration and DTOs.
+
+| Module | Minimum line coverage | Minimum branch coverage |
+|---|---:|---:|
+| gateway | 82% | 67% |
+| mock-rest-api-server | 59% | 35% |
+| report-server | 72% | 53% |
+
+`verifyCoverageInputs` rejects missing or empty execution data before reporting/verification.
+Karate has no production source set, so it has no production coverage gate; its runner unit tests,
+test-source static analysis and architecture checks still run. Live `e2eTest` remains separate and
+does not contribute to these unit-test coverage floors.
+
+Reports are generated under each module's `build/reports/`: `checkstyle/`, `pmd/`, `spotbugs/`,
+`tests/archUnitTest/`, and `jacoco/test/` (HTML and XML where supported). The root
+`jacocoRootReport` combines the three Spring modules into `build/reports/jacoco/jacocoRootReport/`.
+Run `check` to enforce the per-module floors; generating a report alone does not enforce coverage.

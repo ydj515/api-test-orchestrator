@@ -213,7 +213,10 @@ and application dependencies, framework/serialization leakage, presentation acce
 or domain operations, and infrastructure access to application services. Transaction annotations
 belong to application code. Karate is checked from its test classes because it has no production code.
 
-The gate uses the JDK pinned by mise and adds no analysis dependency. `build-logic:check` exercises
+`architectureTest` also runs `archUnitTest`: ArchUnit checks the compiled dependency policy,
+rejects cycles between layers and verifies that each module imports a nonempty class set. Both
+engines use `config/architecture/src/test/java/architecture/policy/LayerPolicy.java`; compiled
+negative fixtures prove that outward dependencies and cycles fail. `build-logic:check` exercises
 allowed/forbidden policy fixtures and validates the Gradle plugin. The separate `verifyModuleGraph`
 check compares documented Gradle edges with the evaluated build, rather than confusing package
 architecture with deployment or HTTP dependencies.

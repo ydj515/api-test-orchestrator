@@ -1157,6 +1157,355 @@ mirror나 allowlist를 사용하면 예제의 `mavenCentral()`을 해당 프로�
 
 ---
 
+# ArchUnit Guidelines
+
+이 문서는 Java와 Kotlin/JVM 프로젝트의 package, layer와 dependency 방향을 ArchUnit test로
+검증하기 위한 기준입니다. ArchUnit은 compile된 JVM bytecode를 분석하므로 framework 문서의
+의존 규칙을 실행 가능한 test로 고정하는 데 사용합니다.
+
+## 의존성과 실행
+
+- JUnit 5 프로젝트는 `com.tngtech.archunit:archunit-junit5` version을 test dependency로
+  고정합니다.
+- Gradle Kotlin DSL 시작점은 `templates/gradle/archunit/build.gradle.kts.example`입니다.
+- architecture test 이름과 Gradle filter를 일치시키고 root `check` 또는 프로젝트 `verify`가
+  반드시 실행하게 합니다.
+- production class만 import하고 test fixture, generated class와 third-party package는 분석
+  범위에서 제외합니다.
+- multi-module 검사는 각 대상 모듈의 production output을 분석 classpath에 포함하고 필요한
+  compile task와 연결합니다. 대표 class/package의 존재를 확인해 일부 모듈만 import된 상태를
+  성공으로 처리하지 않습니다.
+- test 이름 filter, JUnit engine과 source set 설정으로 test가 실제 발견되는지 확인합니다.
+  `NO-SOURCE`, `SKIPPED` 또는 실행된 test 0개는 최초 연결 검증의 성공 증거가 아닙니다.
+  `test`와 별도 task의 중복 실행 여부도 명시합니다.
+- ArchUnit, JUnit과 Gradle API는 프로젝트의 고정 버전에서 지원되는 구성을 사용합니다.
+  분석 대상 JDK bytecode와 ArchUnit의 호환성도 확인합니다.
+
+## Rule 설계
+
+- package 이름이 아니라 실제 architecture profile의 dependency 방향을 먼저 정의합니다.
+- layer access, domain의 framework 독립성, transaction annotation 소유 위치와 slice cycle처럼
+  변경 시 영향이 큰 규칙부터 추가합니다.
+- class suffix, 모든 public method와 같은 구현 세부를 과도하게 고정하지 않습니다.
+- 예외는 전체 rule을 비활성화하지 않고 최소 package/class만 허용하며 기술적 이유와 제거
+  조건을 기록합니다.
+- `allowEmptyShould(true)`로 package 오타나 빈 분석 범위를 숨기지 않습니다.
+- reflection, DI 설정과 런타임 호출 관계는 bytecode 의존 검사만으로 보장하지 않습니다.
+  필요한 wiring/기동 검증은 integration test로 분리합니다.
+
+## Java와 Kotlin
+
+JUnit integration의 `@AnalyzeClasses`와 `@ArchTest`를 사용하면 imported class cache와 test
+실행을 재사용할 수 있습니다. Kotlin source도 JVM bytecode로 분석되지만 top-level declaration,
+companion object와 synthetic class 이름에 직접 결합하는 규칙은 피합니다.
+
+architecture profile이 바뀌면 정상 dependency와 각 금지 방향을 나타내는 작은 fixture를
+같은 변경에서 갱신합니다.
+
+## 문서와 Gradle 모듈 의존 그래프의 일치 검증
+
+- 모듈과 의존 방향을 설명하는 architecture 문서에는 실제 Gradle 의존 그래프와의 일치를
+  검증하는 test도 추가합니다. ArchUnit의 bytecode 검증과 별도로, 코드에서 아직 사용하지
+  않는 Gradle project dependency와 문서의 누락·역방향 화살표까지 검사합니다.
+- 비교 대상 문서와 diagram을 명시하고, diagram의 module ID를 Gradle project path에
+  매핑합니다. 문서의 `A → B`는 "A가 B에 의존한다"는 의미로 고정합니다. 호출 흐름이나
+  데이터 흐름 diagram은 이 검사에 포함하지 않습니다.
+- 동일 그래프가 여러 문서에 반복되면 기준 데이터에서 생성하고 생성물의 최신 여부를
+  검사하거나, 각 문서를 같은 실제 그래프와 대조합니다. 검사 중 문서를 자동 수정해 차이를
+  없애지 않고 갱신 명령과 검증 명령을 분리합니다.
+- diagram ID, node alias, label과 group의 의미 및 지원 문법을 고정합니다. 표시 이름 변경은
+  module ID 변경과 구분하고 중복 ID나 모호한 매핑은 실패시킵니다. 여러 project를 하나의
+  node로 묶으면 명시적 매핑을 사용하며 그룹 내부 의존 검사도 별도로 유지합니다.
+- 문서가 전체 모듈을 설명하는지 특정 하위 모듈만 설명하는지 명시합니다. 전체 범위에서는
+  Gradle에 포함된 대상 project 집합과 문서의 module 집합이 같아야 합니다. 부분 범위에서는
+  포함할 project와 경계 밖 의존의 처리 기준을 명시하며, 문서에 나온 모듈만으로 검사 범위를
+  정해 누락을 숨기지 않습니다.
+- Gradle build script를 정규식으로 읽거나 별도 목록에 실제 의존 관계를 복사하지 않습니다.
+  Gradle이 평가한 project/configuration 모델과 선택한 configuration의 resolution 결과를
+  사용합니다. convention plugin, configuration 상속과 dependency substitution이 반영된
+  결과를 기준으로 삼습니다.
+- production `compileClasspath`와 `runtimeClasspath` 등 비교할 configuration을 명시합니다.
+  test, fixture, build tooling, external library와 included build의 포함 여부도 고정합니다.
+  configuration별로 비교하거나 합집합으로 비교할지 문서에 기록합니다.
+- 기본 비교 단위는 직접 project dependency입니다. resolution 결과의 전이 의존을 직접
+  화살표로 취급하지 않습니다. 문서의 화살표가 실제 의존이 아닌 "허용 가능한 의존"을
+  나타낸다면 별도 diagram으로 분리하고, 실제 의존 집합이 허용 집합의 부분집합인지 검사합니다.
+- 각 source project의 선택한 configuration에서 root의 직접 dependency edge를 추출합니다.
+  dependency constraint를 실제 의존 edge로 세지 않고, substitution은 요청 대상과 선택된
+  대상을 구분해 선택된 project를 비교합니다. included build를 포함하면 build 식별자와
+  project path를 함께 사용해 같은 path의 충돌을 막습니다.
+- plugin에 따라 configuration이 없거나 variant가 여러 개일 수 있습니다. 지원하는 plugin과
+  variant를 명시하고 필수 configuration 누락을 빈 그래프로 대체하지 않습니다. property나
+  profile에 따라 그래프가 달라지면 CI에서 검증할 조합을 고정합니다.
+- 실제 의존을 설명하는 diagram은 module 집합과 방향이 있는 edge 집합을 각각 정확히
+  비교합니다. 문서에만 있는 모듈·화살표, Gradle에만 있는 모듈·화살표와 반대 방향 의존을
+  실패로 처리하고, 실패 메시지에 project path, configuration과 차이를 출력합니다.
+- 지원하지 않는 diagram 문법, 알 수 없는 module ID, 빈 비교 범위와 dependency resolution
+  실패는 검증 실패로 처리합니다. 파싱할 수 없는 항목을 건너뛰어 성공시키지 않습니다.
+
+기존 `architectureTest`에는 그래프 비교 task를 선행 작업으로 연결할 수 있습니다.
+프로젝트에서 `verifyArchitectureDiagram` task를 구현·등록한 뒤 아래 연결을 추가합니다.
+이 예시는 연결 방식만 나타내며, 그래프 추출과 문서 비교 구현을 제공하지 않습니다.
+
+```kotlin
+tasks.named("architectureTest") {
+    dependsOn("verifyArchitectureDiagram")
+}
+```
+
+multi-project build에서는 전체 비교를 담당하는 root task와 각 모듈의 `architectureTest`
+경로를 명시적으로 연결합니다. 기존 `check → architectureTest` 연결을 유지하고, 그래프 비교
+task가 다시 `architectureTest`에 의존하는 순환을 만들지 않습니다. 문서와 관련 Gradle 설정의
+변경이 검사에 반영되도록 task input을 선언하고, 모델 변경을 추적할 수 없다면 검증 결과를
+재사용하지 않습니다.
+
+검사 자체에는 일치하는 정상 fixture와 함께 모듈 누락·추가, 화살표 누락·추가·역전,
+configuration별 의존, 직접·전이 의존 구분과 잘못된 diagram의 실패 fixture를 둡니다.
+Gradle TestKit 등 프로젝트의 기존 검증 방식으로 문서만 바뀌거나 Gradle 의존만 바뀌어도
+`architectureTest`와 `check`가 실패하는지 확인합니다.
+
+문서와 그래프가 같더라도 금지 의존이나 순환이 함께 추가될 수 있으므로 허용 방향과 cycle
+규칙은 독립적으로 유지합니다. module/edge 출력은 정렬해 재현 가능한 차이를 제공하고,
+예외에는 대상, 이유와 제거 조건을 기록합니다. cache를 사용하는 프로젝트는 최초 실행 후
+문서만 변경한 경우와 Gradle 설정만 변경한 경우에도 검증이 다시 수행되는지 확인합니다.
+
+Maven 프로젝트에는 위 Gradle task 예시를 그대로 적용하지 않습니다. 같은 문서 비교 원칙을
+사용하되 활성 profile의 reactor module, effective POM과 resolved dependency를 기준으로
+scope와 직접 의존을 정의하고 `verify` lifecycle에 연결합니다. 현재 Gradle template과 Maven
+template은 문서·그래프 비교 구현을 포함하지 않습니다.
+
+## 검증
+
+```sh
+./gradlew architectureTest
+./gradlew check
+```
+
+```sh
+./mvnw test
+./mvnw verify
+```
+
+참고: [ArchUnit User Guide](https://www.archunit.org/userguide/html/000_Index.html),
+[Gradle Graph Resolution](https://docs.gradle.org/current/userguide/dependency_graph_resolution.html),
+[Gradle Configuration Cache Requirements](https://docs.gradle.org/current/userguide/configuration_cache_requirements.html)
+
+---
+
+# Checkstyle Guidelines
+
+이 문서는 Java source의 형식과 팀 규약을 Checkstyle로 재현 가능하게 검사하기 위한
+기준입니다. Checkstyle은 style과 구조 규칙을 담당하며 runtime bug나 dependency
+취약점 탐지 도구로 사용하지 않습니다.
+
+## 설정 관리
+
+- 규칙 파일을 저장소에 커밋하고 build 설정에서 경로를 명시합니다.
+- Gradle의 기본 경로를 따르면 `config/checkstyle/checkstyle.xml`을 사용합니다.
+- Checkstyle tool 버전과 Gradle 또는 Maven plugin 버전을 프로젝트가 고정합니다.
+- formatter가 자동 수정하는 영역과 Checkstyle이 실패시키는 영역의 소유권을 나눠
+  같은 형식을 서로 다른 규칙으로 중복 강제하지 않습니다.
+- 기본 설정은 `templates/checkstyle/checkstyle.xml`에서 시작하고 프로젝트 규약에
+  맞는 rule만 명시적으로 추가합니다.
+
+## Gradle 연결
+
+- Gradle core `checkstyle` plugin을 적용하고 `toolVersion`을 고정합니다.
+- Kotlin DSL 시작점은 `templates/gradle/checkstyle/build.gradle.kts.example`을 사용합니다.
+- `checkstyleMain`과 `checkstyleTest`의 실제 분석 범위를 확인합니다.
+- Java plugin과 함께 사용할 때 생성되는 Checkstyle task가 `check`에 연결되어 있는지
+  task graph로 검증합니다.
+- Checkstyle 실행 JDK 요구사항이 compile target과 다르면 Java toolchain launcher를
+  명시합니다.
+
+## Maven 연결
+
+- `maven-checkstyle-plugin` 버전과 `configLocation`을 POM에서 고정합니다.
+- site report만 생성하는 goal이 아니라 violation을 build 실패로 만드는 `check` goal을
+  build lifecycle에 연결합니다.
+- compile 오류보다 style 오류가 먼저 노출되어야 하는 정책이면 `validate`, compile
+  이후 검사하려면 `verify` phase를 사용하고 팀 명령과 일치시킵니다.
+- test source도 검사할지 명시하고 CI에서 violation 실패를 비활성화하지 않습니다.
+
+## 예외와 검증
+
+- suppression은 file 전체보다 rule과 source 범위를 좁게 지정합니다.
+- 생성 코드 또는 외부 소유 코드만 경로 제외 대상으로 사용합니다.
+- rule set을 변경하면 기존 위반 수와 formatter 중복을 확인하고 결과를 검토합니다.
+
+```sh
+./gradlew checkstyleMain checkstyleTest
+./gradlew check
+```
+
+```sh
+./mvnw checkstyle:check
+./mvnw verify
+```
+
+---
+
+# SpotBugs Guidelines
+
+이 문서는 compile된 Java bytecode에서 bug pattern을 찾는 SpotBugs를 재현 가능한 품질
+게이트로 운영하기 위한 기준입니다. SpotBugs 결과는 결함 후보이며 테스트와 domain
+검증을 대체하지 않습니다.
+
+## 분석 계약
+
+- SpotBugs engine과 build plugin 버전을 프로젝트가 고정합니다.
+- production class와 test class의 분석 여부를 명시하고 필요한 compile task 이후에
+  실행합니다.
+- `ignoreFailures`, `failOnError`, 허용 위반 수 설정으로 새 finding을 성공 처리하지
+  않습니다.
+- effort와 confidence 수준을 변경할 때는 실행 시간과 finding 변화를 측정합니다.
+- 공통 filter 경로는 `config/spotbugs/exclude-filter.xml`로 두고 Gradle과 Maven에서
+  같은 예외 계약을 사용합니다.
+- 시작점은 `templates/spotbugs/exclude-filter.xml`을 사용하고 실제 예외가 생길 때만
+  좁은 `Match`를 추가합니다.
+
+## Gradle 연결
+
+- `com.github.spotbugs` plugin 버전을 고정하고 `spotbugsMain`, `spotbugsTest` task를
+  필요한 source set에 적용합니다.
+- Kotlin DSL 시작점은 `templates/gradle/spotbugs/build.gradle.kts.example`을 사용하고
+  plugin과 engine 버전을 각각 고정합니다.
+- `runOnCheck` 또는 명시적 dependency로 전체 `check`에서 분석이 실행되게 합니다.
+- report format과 저장 경로를 CI artifact 및 review 도구가 읽을 수 있게 고정합니다.
+- exclude filter와 baseline 파일을 사용할 때는 경로와 갱신 절차를 저장소에 기록합니다.
+
+## Maven 연결
+
+- `com.github.spotbugs:spotbugs-maven-plugin` 버전을 POM에서 고정합니다.
+- analysis와 violation 검증이 `verify` lifecycle에서 모두 실행되는지 goal 계약을
+  확인합니다.
+- `failOnError`를 유지하고 test class 분석 여부를 명시합니다.
+- multi-module aggregate report는 module별 gate를 대체하지 않게 구성합니다.
+
+## finding 처리와 검증
+
+- finding의 source 경로와 bytecode 위치를 실제 코드에서 확인한 뒤 수정 또는 예외
+  처리합니다.
+- annotation으로 억제할 때는 정확한 bug pattern과 근거를 기록합니다.
+- 생성 코드나 외부 소유 class만 filter로 제외하고 package 전체를 편의상 제외하지
+  않습니다.
+
+```sh
+./gradlew spotbugsMain spotbugsTest
+./gradlew check
+```
+
+```sh
+./mvnw spotbugs:check
+./mvnw verify
+```
+
+---
+
+# JaCoCo Guidelines
+
+이 문서는 Java와 Kotlin/JVM 프로젝트에서 JaCoCo coverage report와 최소 기준을 재현 가능하게
+운영하기 위한 기준입니다.
+
+## 선택과 버전
+
+- Gradle core `jacoco` plugin을 적용하고 JaCoCo tool version을 version catalog에서 exact
+  version으로 고정합니다.
+- Kotlin 중심 build에서 Kover를 선택했다면 같은 module에 JaCoCo plugin을 중복 적용하지
+  않습니다.
+- Maven은 `jacoco-maven-plugin` 버전과 `prepare-agent`, `report`, `check` execution을 POM에
+  고정합니다.
+
+## Report와 검증
+
+- Gradle Kotlin DSL 시작점은 `templates/gradle/jacoco/build.gradle.kts.example`입니다.
+- `jacocoTestReport`는 기본적으로 `test`에 의존하지 않으므로 test 실행 관계를 명시합니다.
+- `jacocoTestCoverageVerification`도 기본 `check` dependency가 아니므로 최소 기준을 운영할
+  때는 `check` 또는 프로젝트 `verify`에 명시적으로 연결합니다.
+- HTML과 XML report를 생성하고 line, branch 기준을 모두 검증합니다.
+- generated source와 외부 소유 code만 제외합니다. 제외 규칙과 threshold를 낮추는 변경은
+  test 변경과 같은 수준으로 검토합니다.
+
+## 추가 Test suite와 Multi-module
+
+- integration test 같은 별도 `Test` task는 각 task의 `JacocoTaskExtension.destinationFile`을
+  report와 verification의 execution data로 연결합니다.
+- stale하거나 비어 있는 execution data로 성공하지 않도록 선택한 모든 suite가 실행됐고
+  결과 파일이 존재하는지 확인합니다.
+- multi-module build는 Gradle JaCoCo report aggregation plugin 또는 명시적인 root aggregate
+  task 중 하나를 표준 진입점으로 정합니다.
+
+## 검증
+
+```sh
+./gradlew test jacocoTestReport jacocoTestCoverageVerification
+./gradlew check
+```
+
+```sh
+./mvnw verify
+```
+
+참고: [Gradle JaCoCo plugin](https://docs.gradle.org/current/userguide/jacoco_plugin.html),
+[JaCoCo Maven plugin](https://www.jacoco.org/jacoco/trunk/doc/maven.html)
+
+---
+
+# PMD Guidelines
+
+이 문서는 Java source의 code smell과 오류 가능 패턴을 PMD로 검사하기 위한 기준입니다.
+PMD는 source 분석을 담당하며 형식만 다루는 규칙은 Checkstyle 또는 formatter에 맡기고,
+bytecode에서만 확인할 수 있는 문제는 SpotBugs에 맡깁니다.
+
+## 규칙 선택
+
+- PMD 버전과 ruleset을 저장소에서 고정하고 major 변경 시 제거·이름 변경된 rule을
+  확인합니다.
+- 공통 경로는 `config/pmd/ruleset.xml`로 두고 Gradle과 Maven에서 같은 파일을
+  참조합니다.
+- `errorprone`과 `bestpractices` category에서 프로젝트에 의미 있는 규칙부터 채택합니다.
+- priority가 낮다는 이유만으로 모든 위반을 warning 처리하지 않고 실패 기준을
+  문서화합니다.
+- type resolution이 필요한 규칙에는 compile 결과와 dependency classpath가 제공되는지
+  확인합니다.
+- 시작점은 `templates/pmd/ruleset.xml`을 사용하되 false positive는 재현 사례를 확인한
+  뒤 최소 범위로 제외합니다.
+
+## Gradle 연결
+
+- Gradle core `pmd` plugin을 적용하고 `toolVersion`과 ruleset 경로를 고정합니다.
+- Kotlin DSL 시작점은 `templates/gradle/pmd/build.gradle.kts.example`을 사용합니다.
+- `pmdMain`, `pmdTest` 분석 범위와 생성 코드 제외를 확인합니다.
+- Java plugin과 함께 생성되는 PMD task가 `check`에 포함되는지 검증합니다.
+- parallel analysis thread 수는 Gradle 병렬 project 수와 곱해질 수 있으므로 측정 없이
+  과도하게 늘리지 않습니다.
+
+## Maven 연결
+
+- `maven-pmd-plugin` 버전과 ruleset 경로를 POM에서 고정합니다.
+- report 생성만 하는 `pmd` goal이 아니라 violation을 실패시키는 `check` goal을
+  `verify` lifecycle에 연결합니다.
+- `failOnViolation`, `failurePriority`, 허용 위반 수로 gate를 무력화하지 않습니다.
+- multi-module aggregate 분석은 type resolution과 lifecycle 중복 실행 여부를 별도로
+  검증합니다.
+
+## 검증
+
+```sh
+./gradlew pmdMain pmdTest
+./gradlew check
+```
+
+```sh
+./mvnw pmd:check
+./mvnw verify
+```
+
+- rule set 변경 전후 violation을 비교하고 새 규칙이 실제 source에 적용되는지 확인합니다.
+- suppression에는 rule id, 대상과 코드만으로 알 수 없는 이유를 기록합니다.
+
+---
+
 # mise Runtime Guidelines
 
 이 문서는 프로젝트의 런타임과 검증 명령을 `mise.toml`로 재현하기 위한 공통
