@@ -8,7 +8,7 @@
   },
   "config": {
     "path": ".dev-standards/config.yml",
-    "sha256": "fc5ab768be1131c3fd51c6558a86ab483bb493a756c8bd77ab6331dee75a0e59"
+    "sha256": "d190baf9711018967358a52bec7fbb56332df13acc5ef534c0c3a479906a53e0"
   },
   "files": {
     ".dev-standards/claude/skills/merge-dev-standards/SKILL.md": {
@@ -140,11 +140,11 @@
     },
     ".dev-standards/styleguide.md": {
       "ownership": "managed",
-      "sha256": "aa2f09834c68cf680a6434f8f633207661a972a39b6d4898aa62ead564ed26de"
+      "sha256": "96897914b2f0ba5d81165cfe74b44241d05e4761979adf4fac5a62d38958af52"
     },
     ".gemini/styleguide.md": {
       "ownership": "managed",
-      "sha256": "aa2f09834c68cf680a6434f8f633207661a972a39b6d4898aa62ead564ed26de"
+      "sha256": "96897914b2f0ba5d81165cfe74b44241d05e4761979adf4fac5a62d38958af52"
     },
     ".worktreeinclude": {
       "ownership": "project-owned"
@@ -158,6 +158,10 @@
     "GEMINI.md": {
       "ownership": "project-owned",
       "bootstrapSha256": "42fbbc9d55ee0d149c90e4bf93abe8b7278a5482b232be6f5bfc59cc0465e694"
+    },
+    ".dev-standards/standards/architectures/layered-clean.md": {
+      "ownership": "managed",
+      "sha256": "3b74ff86dac47093a2f7ef85a8644c695b23b970ed6d7c23c14ecfc02b465a1f"
     }
   }
 }

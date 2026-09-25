@@ -14,13 +14,8 @@ run = "cd mock-rest-api-server && ./gradlew bootRun"
 # --- Aggregate tasks (sequential) ---
 
 [tasks.build]
-description = "Build application modules sequentially"
-run = """
-set -e
-(cd gateway && ./gradlew build)
-(cd mock-rest-api-server && ./gradlew build)
-(cd report-server && ./gradlew build)
-"""
+description = "Build and verify all modules"
+run = "./gradlew build"
 
 [tasks."karate:run"]
 description = "Karate 시나리오 실행 (ORG/SERVICE/API 환경변수로 범위 제한)"
@@ -47,13 +42,8 @@ description = "단일 기관/서비스 대상 통합 테스트 실행 (기본: o
 run = "scripts/run-tests.sh"
 
 [tasks."unit:test"]
-description = "모듈 단위 테스트 실행 (gateway → mock → report-server)"
-run = """
-set -e
-(cd gateway && ./gradlew test)
-(cd mock-rest-api-server && ./gradlew test)
-(cd report-server && ./gradlew test)
-"""
+description = "Run all module checks without external servers"
+run = "./gradlew check"
 
 [tasks."cats:run"]
 description = "CATS 퍼징 실행 (ORG/SERVICE/API 환경변수로 범위 제한, CATS_PROFILE=full|smoke)"

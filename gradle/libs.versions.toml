@@ -1,0 +1,22 @@
+[versions]
+spring-boot = "3.5.8"
+spring-boot-report = "3.5.0"
+dependency-management = "1.1.7"
+
+[libraries]
+spring-web = { module = "org.springframework.boot:spring-boot-starter-web" }
+spring-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
+spring-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-configuration-processor = { module = "org.springframework.boot:spring-boot-configuration-processor" }
+lombok = { module = "org.projectlombok:lombok" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+json-path = { module = "com.jayway.jsonpath:json-path" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind" }
+jackson-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310" }
+snakeyaml = { module = "org.yaml:snakeyaml" }
+karate = { module = "io.karatelabs:karate-junit5", version = "1.5.2" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-boot-report = { id = "org.springframework.boot", version.ref = "spring-boot-report" }
+dependency-management = { id = "io.spring.dependency-management", version.ref = "dependency-management" }

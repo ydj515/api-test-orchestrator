@@ -29,7 +29,7 @@ Prioritize these areas when adding or changing behavior:
 ## Running Unit Tests
 
 ```shell
-# gateway/mock/report-server unit tests from root
+# All module checks from root
 mise run unit:test
 
 # single module
@@ -159,3 +159,29 @@ http://localhost:48080/
 - Raw report assets: `report-server/data/runs/{runId}/report/`
 
 서비스 홈(`/`)은 실행 이력만이 아니라 Gateway 계약 카탈로그에 정의된 서비스 전체를 보여줍니다. 아직 실행 이력이 없는 서비스는 마지막 수행/상태가 `-`로 표시됩니다.
+
+## Refactoring Regression Checks
+
+`mise run unit:test` executes the root `check`, including runner-selection unit tests in
+`karate-tests`. Live scenarios are deliberately separate:
+
+```shell
+GATEWAY_URL=http://localhost:28080 ORG=orgA SERVICE=reservation mise exec -- ./gradlew -p karate-tests e2eTest
+```
+
+Gateway tests cover immutable route configuration, duplicate detection, HTTP forwarding and decryption.
+Mock service tests use fixed clocks and controlled identifiers, verify isolated booking stores,
+and exercise concurrent capacity checks. Report tests cover view and JSON contracts, context-path
+links, escaped page data, configuration binding, case snapshots, and failed publication cleanup.
+Unknown CATS execution times stay null; malformed or negative durations fail explicitly.
+
+### Layered-clean migration checks
+
+- `architectureTest` rejects outward application/domain dependencies, web access to output ports,
+  framework/serialization leakage and legacy top-level packages across all three Spring modules.
+- Gateway adapter tests verify application result status/body and upstream authentication/checksum
+  header mapping. Mock feature tests and Karate scenarios cover command/response mapping and errors.
+- Report tests preserve `/api/services` and `/api/runs` timestamp contracts and storage-only Jackson
+  mixins without changing the shared mapper. CLI publishing uses the same `RunPublisher` as HTTP.
+- Verify all four Karate service selections against isolated local gateway/mock instances; inspect
+  each `karate-summary-json.txt` for nonzero scenarios and zero failures.

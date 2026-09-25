@@ -9,7 +9,7 @@
 ## Java/Spring 스타일
 - **라인 길이**: 120자 이하 권장.
 - **들여쓰기**: 스페이스 4칸.
-- **패키지 구조**: `config/crypto/controller/service/exception` 등 역할 기준으로 분리.
+- **패키지 구조**: `presentation/application/domain/infrastructure/config` 계층 아래에 기능별 패키지를 둡니다. 의존 방향과 예외는 `docs/architecture.md`의 layered-clean 기준을 따릅니다.
 - **네이밍**: 클래스 PascalCase, 메서드·변수 camelCase. 상수는 UPPER_SNAKE_CASE.
 - **Optional 사용**: 컨트롤러 반환 외에는 `Optional` 남기지 않고 즉시 처리.
 - **Lombok**: 사용 가능하되 `@Data`처럼 getter/setter/equals/hashCode/toString을 한꺼번에 여는 애너테이션은 지양한다. 필요한 기능만 `@Getter`, `@Builder`, `@RequiredArgsConstructor` 등으로 좁혀 쓴다.
@@ -59,30 +59,18 @@
 - 필요한 테스트 추가/갱신 여부 확인.
 - silent fallback 없이 실패/경계 입력을 명시적으로 처리하는지 확인.
 
-## 예시 스니펫 (Gateway 흐름)
+## 예시 스니펫 (Gateway HTTP 경계)
+
 ```java
 @PostMapping("/{org}/{service}/{api}")
 public ResponseEntity<String> proxy(@PathVariable String org,
                                     @PathVariable String service,
                                     @PathVariable String api,
                                     @RequestBody String body) {
-    ApiRoute route = gatewayProperties.find(org, service, api, "POST")
-            .orElseThrow(() -> new RouteNotFoundException("route not found"));
-    String encrypted = cryptoModule.encrypt(route.key(), body);
-    String checksum = checksumModule.checksum(encrypted);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.set("X-Checksum", checksum);
-    // ... X-Api-Key, X-Ins-Code 등 추가
-
-    ResponseEntity<String> upstream = restClient.post()
-            .uri(route.host() + route.externalPath())
-            .headers(h -> h.putAll(headers))
-            .body(Map.of("data", encrypted))
-            .retrieve()
-            .toEntity(String.class);
-
-    String decrypted = cryptoModule.decrypt(route.key(), JsonPath.read(upstream.getBody(), "$.data"));
-    return ResponseEntity.status(upstream.getStatusCode()).body(decrypted);
+    ProxyResponse result = gatewayProxyService.proxyPost(org, service, api, body);
+    return ResponseEntity.status(result.status()).body(result.body());
 }
 ```
+
+라우트 조회·암호화·호출 순서는 application 서비스가, 헤더·JSON·HTTP 처리는 infrastructure
+어댑터가 담당합니다. HTTP 상태와 오류 응답의 최종 변환은 presentation에 둡니다.

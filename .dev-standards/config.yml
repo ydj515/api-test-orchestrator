@@ -2,8 +2,8 @@ version: 1
 base: true
 languages:
   - java
-# 기존 docs/architecture.md와 모듈별 지침을 유지합니다.
-architectures: []
+architectures:
+  - layered-clean
 frameworks:
   - spring
   - thymeleaf
