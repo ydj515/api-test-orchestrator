@@ -4,23 +4,23 @@ For the full system overview and request flow, see [../../docs/architecture.md](
 
 ## Package Layout
 
-```
+```text
 src/main/java/com/example/gateway/
-├── controller/       # @RestController — receives client requests, delegates to service
-├── service/          # Route forwarding, upstream HTTP calls, response handling
-├── config/           # GatewayProperties (@ConfigurationProperties), Spring beans
-├── crypto/           # CryptoModule + ChecksumModule interfaces and local stubs
-├── util/             # Header builders, URI helpers
-└── exception/        # RouteNotFoundException, global @ControllerAdvice
+├── presentation/proxy/web/          # HTTP controller and exception advice
+├── application/proxy/              # Proxy use case, ports, result and errors
+├── domain/routing/model/           # Framework-independent route value
+├── infrastructure/http/            # RestClient, headers, JSON and URI expansion
+├── infrastructure/crypto/          # Base64 and SHA-256 adapters
+└── config/                         # Route binding and bean composition
 ```
 
 ## Key Classes
 
 | Class | Responsibility |
 |---|---|
-| `GatewayController` | Entry point: maps `/{org}/{service}/{api}` to service call |
-| `GatewayService` | Orchestrates route lookup, encryption, upstream call, decryption |
-| `GatewayProperties` | Binds `gateway.apis[]` config; provides route lookup |
+| `GenericGatewayController` | Entry point: maps `/{org}/{service}/{api}` to service call |
+| `GatewayProxyService` | Orchestrates route lookup, encryption, upstream call, decryption |
+| `GatewayProperties` | Binds immutable `gateway.apis[]` snapshots; rejects duplicate route keys |
 | `CryptoModule` | Interface: `encrypt(key, plain)` / `decrypt(key, cipher)` |
 | `ChecksumModule` | Interface: `checksum(data)` |
 | `RouteNotFoundException` | Thrown when `(org, service, api, method)` has no matching route |

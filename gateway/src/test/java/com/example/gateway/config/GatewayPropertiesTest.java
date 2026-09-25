@@ -1,10 +1,10 @@
 package com.example.gateway.config;
 
+import com.example.gateway.domain.routing.model.ApiRoute;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -80,5 +80,44 @@ class GatewayPropertiesTest {
         // then
         assertThat(props.find("o1", "s1", "a1", "GET")).isEmpty();
         assertThat(props.find("o2", "s2", "a2", "POST")).isPresent();
+    }
+
+    @Test
+    void protectsRouteListFromExternalMutation() {
+        GatewayProperties props = new GatewayProperties();
+        var routes = new java.util.ArrayList<ApiRoute>();
+        routes.add(new ApiRoute("o", "s", "a", "POST", "http://example.com", "/ext", null, null, null, false));
+        props.setApis(routes);
+        routes.clear();
+        assertThat(props.getApis()).hasSize(1);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> props.getApis().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThat(props.find("o", "s", "a", "POST")).isPresent();
+    }
+
+    @Test
+    void rejectsDuplicateKeysWithoutReplacingExistingConfiguration() {
+        GatewayProperties props = new GatewayProperties();
+        ApiRoute route = new ApiRoute("o", "s", "a", "POST", "http://example.com", "/ext", null, null, null, false);
+        props.setApis(List.of(route));
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> props.setApis(List.of(route, route)))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Duplicate gateway route");
+        assertThat(props.getApis()).containsExactly(route);
+    }
+
+    @Test
+    void rejectsMissingMethodWithAnExplicitConfigurationError() {
+        GatewayProperties props = new GatewayProperties();
+        ApiRoute route = new ApiRoute("o", "s", "a", null, "http://example.com", "/ext", null, null, null, false);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> props.setApis(List.of(route)))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("method is required");
+    }
+
+    @Test
+    void routeDiagnosticsDoNotExposeCredentials() {
+        ApiRoute route = new ApiRoute("o", "s", "a", "POST", "http://example.com", "/ext",
+                "encryption-secret", "api-secret", "institution-code", true);
+        assertThat(route.toString()).contains("org=o", "service=s", "api=a")
+                .doesNotContain("encryption-secret", "api-secret", "institution-code");
     }
 }
