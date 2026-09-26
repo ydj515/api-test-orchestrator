@@ -19,6 +19,9 @@ public class OrgAReservationContracts {
     }
 
     public record ResourceListResult(List<ResourceSummary> items, int page, int size, long total) {
+        public ResourceListResult {
+            items = List.copyOf(items);
+        }
     }
 
     public record InventoryStatus(String resourceId,
@@ -32,6 +35,9 @@ public class OrgAReservationContracts {
     }
 
     public record ScheduleListResult(String resourceId, List<ScheduleItem> items) {
+        public ScheduleListResult {
+            items = List.copyOf(items);
+        }
     }
 
     public record DailyScheduleItem(String resourceId,
@@ -42,6 +48,9 @@ public class OrgAReservationContracts {
     }
 
     public record DailyScheduleListResult(LocalDate date, List<DailyScheduleItem> items) {
+        public DailyScheduleListResult {
+            items = List.copyOf(items);
+        }
     }
 
     public record ReservationCreateCommand(String resourceId,

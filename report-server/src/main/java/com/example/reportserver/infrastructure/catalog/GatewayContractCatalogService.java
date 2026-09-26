@@ -252,7 +252,8 @@ public class GatewayContractCatalogService implements ContractCatalog {
         if (path.isAbsolute()) {
             return path.normalize();
         }
-        return catalogPath.getParent().resolve(path).toAbsolutePath().normalize();
+        return java.util.Objects.requireNonNull(catalogPath.toAbsolutePath().getParent(),
+                "Catalog path must have a parent directory").resolve(path).toAbsolutePath().normalize();
     }
 
     @SuppressWarnings("unchecked")

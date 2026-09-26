@@ -10,6 +10,9 @@ public class OrgBVisitServiceDtos {
     }
 
     public record SiteListResponse(List<SiteSummary> items, int page, int size, long total) {
+        public SiteListResponse {
+            items = List.copyOf(items);
+        }
     }
 
     public record VisitSlotStatus(String siteId, LocalDate date, int totalSlots, int availableSlots, int reservedSlots) {

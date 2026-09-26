@@ -42,5 +42,8 @@ public final class JavaConventionsPlugin implements Plugin<Project> {
             project.getTasks().named("check", task -> task.dependsOn(architecture));
         }
         project.getTasks().withType(Test.class).configureEach(Test::useJUnitPlatform);
+        if (basePackage != null) {
+            JavaQuality.configure(project, basePackage);
+        }
     }
 }

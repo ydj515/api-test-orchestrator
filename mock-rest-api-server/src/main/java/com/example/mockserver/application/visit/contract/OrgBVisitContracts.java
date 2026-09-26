@@ -10,6 +10,9 @@ public class OrgBVisitContracts {
     }
 
     public record SiteListResult(List<SiteSummary> items, int page, int size, long total) {
+        public SiteListResult {
+            items = List.copyOf(items);
+        }
     }
 
     public record VisitSlotStatus(String siteId, LocalDate date, int totalSlots, int availableSlots, int reservedSlots) {

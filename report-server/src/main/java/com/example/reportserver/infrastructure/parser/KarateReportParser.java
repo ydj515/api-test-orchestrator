@@ -12,17 +12,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class KarateReportParser {
 
     private static final DateTimeFormatter RESULT_DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss a", Locale.KOREAN);
 
     private final ObjectMapper objectMapper;
+
+    public KarateReportParser(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper.copy();
+    }
 
     public TestRun parse(
             Path reportDir,

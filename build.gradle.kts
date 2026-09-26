@@ -1,7 +1,12 @@
+import org.gradle.testing.jacoco.tasks.JacocoReport
+
 plugins {
     base
+    jacoco
     id("orchestrator.java-conventions") apply false
 }
+
+repositories { mavenCentral() }
 
 val modules = listOf("gateway", "mock-rest-api-server", "report-server", "karate-tests")
 
@@ -32,3 +37,20 @@ gradle.projectsEvaluated {
 tasks.named("check") {
     dependsOn(verifyModuleGraph, gradle.includedBuild("build-logic").task(":check"))
 }
+
+jacoco { toolVersion = libs.versions.jacoco.get() }
+
+val coverageModules = listOf("gateway", "mock-rest-api-server", "report-server")
+val jacocoRootReport by tasks.registering(JacocoReport::class) {
+    group = "verification"
+    description = "Aggregate production coverage from the three Spring modules"
+    dependsOn(coverageModules.map { ":$it:jacocoTestReport" })
+    executionData.from(coverageModules.map { layout.projectDirectory.file("$it/build/jacoco/test.exec") })
+    classDirectories.from(coverageModules.map { layout.projectDirectory.dir("$it/build/classes/java/main") })
+    sourceDirectories.from(coverageModules.map { layout.projectDirectory.dir("$it/src/main/java") })
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+tasks.named("check") { dependsOn(jacocoRootReport) }

@@ -9,6 +9,11 @@ frameworks:
   - thymeleaf
 builds:
   - gradle
-tools: []
+tools:
+  - archunit
+  - checkstyle
+  - spotbugs
+  - jacoco
+  - pmd
 runtimes:
   - mise

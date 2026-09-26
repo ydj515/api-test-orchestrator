@@ -10,6 +10,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class PageViewTest {
     @Test
+    void serviceResponseKeepsItsApiSnapshot() {
+        var apis = new java.util.ArrayList<>(List.of("listSites"));
+        var response = new com.example.reportserver.presentation.run.web.dto.ServiceSummaryResponse(
+                "contract", "org", "service", apis, 1, null, null, null);
+        apis.clear();
+        assertThat(response.apis()).containsExactly("listSites");
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> response.apis().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
     void jsonCannotTerminateScriptAndRoundTripsOriginalText() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String dangerous = "</script><script>alert('x')</script>&\u2028\u2029";

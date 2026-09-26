@@ -49,6 +49,8 @@ class GatewayContractCatalogServiceTest {
         assertThat(contract.getChecksum()).hasSize(64);
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "VA_FORMAT_STRING_USES_NEWLINE",
+            justification = "YAML fixtures intentionally use LF on every platform")
     private void writeContract(Path path, String org, String service, Map<String, String> operations) throws Exception {
         StringBuilder pathsYaml = new StringBuilder();
         operations.forEach((api, operationId) -> pathsYaml.append("""

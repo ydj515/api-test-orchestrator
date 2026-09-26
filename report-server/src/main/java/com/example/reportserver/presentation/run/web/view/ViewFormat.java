@@ -18,7 +18,9 @@ final class ViewFormat {
     }
 
     static String badge(TestStatus status) {
-        if (status == null) return "text-bg-secondary";
+        if (status == null) {
+            return "text-bg-secondary";
+        }
         return status == TestStatus.FAIL ? "text-bg-danger" : "text-bg-success";
     }
 }

@@ -9,6 +9,9 @@ public class OrgBSupportContracts {
     }
 
     public record DeviceListResult(List<DeviceSummary> items, int page, int size, long total) {
+        public DeviceListResult {
+            items = List.copyOf(items);
+        }
     }
 
     public record SupportTicketCreateCommand(String deviceId,

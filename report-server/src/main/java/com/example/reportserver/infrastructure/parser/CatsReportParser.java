@@ -21,13 +21,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Stream;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class CatsReportParser {
 
     private static final String SUMMARY_FILE = "cats-summary-report.json";
@@ -38,6 +36,10 @@ public class CatsReportParser {
             DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
 
     private final ObjectMapper objectMapper;
+
+    public CatsReportParser(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper.copy();
+    }
 
     public TestRun parseRun(
             Path reportDir,

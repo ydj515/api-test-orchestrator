@@ -14,7 +14,7 @@ public class PayloadCryptoAdapter {
     private final ObjectMapper objectMapper;
 
     public PayloadCryptoAdapter(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+        this.objectMapper = objectMapper.copy();
     }
 
     public JsonNode decryptToJson(String encryptedData) {

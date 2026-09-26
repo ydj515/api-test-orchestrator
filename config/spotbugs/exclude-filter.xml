@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- View row carries the internal run for mapping; it is not an external API DTO. -->
+  <Match>
+    <Class name="com.example.reportserver.application.run.result.RunHistoryRow"/>
+    <Method name="getRun"/>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+  <!-- Lombok builder temporarily collects references; the value constructor copies collections. -->
+  <Match>
+    <Class name="com.example.reportserver.application.run.result.RunHistoryRow$RunHistoryRowBuilder"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Lombok builder temporarily collects references; the value constructor copies collections. -->
+  <Match>
+    <Class name="com.example.reportserver.application.run.result.ServiceSummary$ServiceSummaryBuilder"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Lombok builder temporarily collects references; the value constructor copies collections. -->
+  <Match>
+    <Class name="com.example.reportserver.domain.catalog.model.GatewayContract$GatewayContractBuilder"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Mutable Jackson wire DTO confined to report parsing; generated accessors intentionally share decoded values. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.parser.dto.CatsIndividualReport"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Mutable Jackson wire DTO confined to report parsing; generated accessors intentionally share decoded values. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.parser.dto.CatsSummaryReport"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Mutable Jackson wire DTO confined to report parsing; generated accessors intentionally share decoded values. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.parser.dto.KarateFeatureResult"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Mutable Jackson wire DTO confined to report parsing; generated accessors intentionally share decoded values. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.parser.dto.KarateFeatureResult$ScenarioResult"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Mutable Jackson wire DTO confined to report parsing; generated accessors intentionally share decoded values. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.parser.dto.KarateFeatureResult$StepResult"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- Mutable Jackson wire DTO confined to report parsing; generated accessors intentionally share decoded values. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.parser.dto.KarateSummary"/>
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+  <!-- YAML fixtures intentionally use LF on every platform. -->
+  <Match>
+    <Class name="com.example.reportserver.infrastructure.catalog.GatewayContractCatalogServiceTest"/>
+    <Method name="~lambda\$writeContract\$.*"/>
+    <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE"/>
+  </Match>
+  <!-- Spring constructor intentionally shares the configured PageJson serializer; no mutable state is exposed. -->
+  <Match>
+    <Class name="com.example.reportserver.presentation.run.web.ReportController"/>
+    <Method name="&lt;init&gt;"/>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+</FindBugsFilter>
