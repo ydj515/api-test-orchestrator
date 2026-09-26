@@ -98,6 +98,10 @@
       "ownership": "managed",
       "sha256": "bb7840a5b660a860b0dbee02867dbb4d2f47464c9ee21f215d97483fa7597614"
     },
+    ".dev-standards/standards/architectures/layered-clean.md": {
+      "ownership": "managed",
+      "sha256": "3b74ff86dac47093a2f7ef85a8644c695b23b970ed6d7c23c14ecfc02b465a1f"
+    },
     ".dev-standards/standards/base.md": {
       "ownership": "managed",
       "sha256": "3345a97ccaf51f10e4ea6aafb7b806450fd911990409473424b8bddab38fded6"
@@ -121,6 +125,26 @@
     ".dev-standards/standards/runtime/mise.md": {
       "ownership": "managed",
       "sha256": "fd66a8ed4ffa1f28ef5537e90cb6c0fdc033e9890bc71935a2a27417eec164f9"
+    },
+    ".dev-standards/standards/tools/languages/java/archunit.md": {
+      "ownership": "managed",
+      "sha256": "ed01903357b8837dbf4a5d1a5afc145fd3edbe3d03f916f99071e3bb88539932"
+    },
+    ".dev-standards/standards/tools/languages/java/checkstyle.md": {
+      "ownership": "managed",
+      "sha256": "662e522940ebe4204d951f668dde9032d1f036ea3f26d68a33fc6c9cdc4f746f"
+    },
+    ".dev-standards/standards/tools/languages/java/jacoco.md": {
+      "ownership": "managed",
+      "sha256": "90dba5fb225b6497a9517104f0a9abe54aeec4fed25973d5397cf3ade5dd85d5"
+    },
+    ".dev-standards/standards/tools/languages/java/pmd.md": {
+      "ownership": "managed",
+      "sha256": "3dd073b5f2f8462caccfc32a0025408570d5f3fa6831eadb2e6a1bf413d148d8"
+    },
+    ".dev-standards/standards/tools/languages/java/spotbugs.md": {
+      "ownership": "managed",
+      "sha256": "3ed4502eb4dabf4256e9e9f6b1fe0656c14a1b54e68a07e5979673478953672b"
     },
     ".dev-standards/standards/workflows/branch.md": {
       "ownership": "managed",
@@ -158,30 +182,6 @@
     "GEMINI.md": {
       "ownership": "project-owned",
       "bootstrapSha256": "42fbbc9d55ee0d149c90e4bf93abe8b7278a5482b232be6f5bfc59cc0465e694"
-    },
-    ".dev-standards/standards/architectures/layered-clean.md": {
-      "ownership": "managed",
-      "sha256": "3b74ff86dac47093a2f7ef85a8644c695b23b970ed6d7c23c14ecfc02b465a1f"
-    },
-    ".dev-standards/standards/tools/languages/java/checkstyle.md": {
-      "ownership": "managed",
-      "sha256": "662e522940ebe4204d951f668dde9032d1f036ea3f26d68a33fc6c9cdc4f746f"
-    },
-    ".dev-standards/standards/tools/languages/java/archunit.md": {
-      "ownership": "managed",
-      "sha256": "ed01903357b8837dbf4a5d1a5afc145fd3edbe3d03f916f99071e3bb88539932"
-    },
-    ".dev-standards/standards/tools/languages/java/pmd.md": {
-      "ownership": "managed",
-      "sha256": "3dd073b5f2f8462caccfc32a0025408570d5f3fa6831eadb2e6a1bf413d148d8"
-    },
-    ".dev-standards/standards/tools/languages/java/spotbugs.md": {
-      "ownership": "managed",
-      "sha256": "3ed4502eb4dabf4256e9e9f6b1fe0656c14a1b54e68a07e5979673478953672b"
-    },
-    ".dev-standards/standards/tools/languages/java/jacoco.md": {
-      "ownership": "managed",
-      "sha256": "90dba5fb225b6497a9517104f0a9abe54aeec4fed25973d5397cf3ade5dd85d5"
     }
   }
 }
