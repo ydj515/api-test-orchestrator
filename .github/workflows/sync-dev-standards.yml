@@ -6,8 +6,8 @@ on:
     paths:
       - '.dev-standards/config.yml'
   schedule:
-    # 매일 09:05 KST = 00:05 UT
-    - cron: "5 0 * * *"
+    # Every Monday at 09:15 KST.
+    - cron: "15 0 * * 1"
 
 permissions:
   contents: write
@@ -15,11 +15,12 @@ permissions:
 
 jobs:
   sync-guide:
-    uses: ydj515/ci-workflows/.github/workflows/sync-dev-standards.yml@v1.3.0
+    uses: ydj515/ci-workflows/.github/workflows/sync-dev-standards.yml@v1.3.1
     with:
       standards_owner: ydj515
       standards_repo: dev-standards
-      standards_ref: v1.3.0
+      standards_ref: latest-release
       delivery_mode: pull-request
-      sync_gemini: true
-      bootstrap_agent_files: true
+      sync_gemini: false
+      bootstrap_templates: false
+      bootstrap_agent_files: false
