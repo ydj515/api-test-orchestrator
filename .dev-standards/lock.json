@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": {
     "repository": "ydj515/dev-standards",
-    "requestedRef": "v1.3.0",
+    "requestedRef": "latest-release",
     "resolvedRef": "v1.3.0",
     "commit": "549f49628fbd83e0d32ca4124025db74daa4e219"
   },
@@ -163,10 +163,6 @@
       "sha256": "2a07d0c959f4725746e426d91505a262982b4d8a9727a4c67692ae975d60a644"
     },
     ".dev-standards/styleguide.md": {
-      "ownership": "managed",
-      "sha256": "019f7ac3b243eb96886034fc0fffb7bc4c75716c22e2da884f6240874f96d921"
-    },
-    ".gemini/styleguide.md": {
       "ownership": "managed",
       "sha256": "019f7ac3b243eb96886034fc0fffb7bc4c75716c22e2da884f6240874f96d921"
     },
