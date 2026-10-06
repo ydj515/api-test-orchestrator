@@ -1,3 +1,15 @@
+min_version = "2026.9.18"
+
+[settings]
+lockfile = true
+lockfile_platforms = ["macos-arm64", "linux-x64"]
+
+[vars]
+runtime_env = "local"
+
+[env]
+APP_ENV = "{{ vars.runtime_env }}"
+
 [tools]
 java = "21.0.2"
 
@@ -5,13 +17,14 @@ java = "21.0.2"
 
 [tasks."gateway:run"]
 description = "Start gateway service"
+env = { "SPRING_PROFILES_ACTIVE" = "local" }
+depends = ["guard:local"]
 run = "cd gateway && ./gradlew bootRun"
 
 [tasks."mock:run"]
 description = "Start mock-rest-api-server (port 18080)"
+depends = ["guard:local"]
 run = "cd mock-rest-api-server && ./gradlew bootRun"
-
-# --- Aggregate tasks (sequential) ---
 
 [tasks.build]
 description = "Build and verify all modules"
@@ -59,6 +72,7 @@ run = "SOURCE=cats scripts/run-tests-matrix.sh"
 
 [tasks."report:run"]
 description = "Start report-server (port 48080)"
+depends = ["guard:local"]
 run = "cd report-server && ./gradlew bootRun"
 
 [tasks.clean]
@@ -70,3 +84,24 @@ set -e
 (cd report-server && ./gradlew clean)
 (cd karate-tests && ./gradlew clean)
 """
+
+[tasks."bootstrap"]
+description = "Install locked tools and project dependencies; do not start services"
+run = "mise install --locked java@21.0.2\n./gradlew --version"
+
+[tasks."config:check"]
+description = "Validate task references without starting applications"
+run = "mise tasks validate --errors-only"
+
+[tasks."verify"]
+description = "Run the repository quality gate"
+run = "mise run unit:test\nmise run build"
+
+[tasks."ci"]
+description = "Run the repository quality gate"
+run = "mise run verify"
+
+[tasks."guard:local"]
+description = "Reject local services under a production environment"
+hide = true
+run = "case \"$APP_ENV\" in local|dev|development) ;; *) echo 'Local services require the default or dev environment' >&2; exit 1 ;; esac"
