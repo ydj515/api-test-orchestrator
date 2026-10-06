@@ -1,3 +1,15 @@
+min_version = "2026.9.18"
+
+[settings]
+lockfile = true
+lockfile_platforms = ["macos-arm64", "linux-x64"]
+
+[vars]
+runtime_env = "local"
+
+[env]
+APP_ENV = "{{ vars.runtime_env }}"
+
 [tools]
 java = "21.0.2"
 
@@ -8,3 +20,11 @@ run = "./gradlew e2eTest"
 [tasks.clean]
 description = "Clean build artifacts"
 run = "./gradlew clean"
+
+[tasks."bootstrap"]
+description = "Install locked tools and project dependencies; do not start services"
+run = "mise install --locked java@21.0.2\n./gradlew --version"
+
+[tasks."config:check"]
+description = "Validate task references without starting applications"
+run = "mise tasks validate --errors-only"

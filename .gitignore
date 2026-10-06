@@ -30,3 +30,12 @@ Thumbs.db
 
 ### 프로젝트 특화 ###
 cats-report/
+
+# Personal mise environments and credentials
+mise.local.toml
+mise.*.local.toml
+mise.local.lock
+mise.*.local.lock
+.miserc.local.toml
+!.env.example
+!.env.*.example

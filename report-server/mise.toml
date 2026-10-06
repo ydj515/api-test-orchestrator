@@ -1,8 +1,21 @@
+min_version = "2026.9.18"
+
+[settings]
+lockfile = true
+lockfile_platforms = ["macos-arm64", "linux-x64"]
+
+[vars]
+runtime_env = "local"
+
+[env]
+APP_ENV = "{{ vars.runtime_env }}"
+
 [tools]
 java = "21.0.2"
 
-[tasks.run]
+[tasks."run"]
 description = "Start report-server (port 48080)"
+depends = ["guard:local"]
 run = "./gradlew bootRun"
 
 [tasks.build]
@@ -16,3 +29,24 @@ run = "./gradlew test"
 [tasks.clean]
 description = "Clean build artifacts"
 run = "./gradlew clean"
+
+[tasks."bootstrap"]
+description = "Install locked tools and project dependencies; do not start services"
+run = "mise install --locked java@21.0.2\n./gradlew --version"
+
+[tasks."config:check"]
+description = "Validate task references without starting applications"
+run = "mise tasks validate --errors-only"
+
+[tasks."verify"]
+description = "Run the repository quality gate"
+run = "./gradlew check"
+
+[tasks."ci"]
+description = "Run the repository quality gate"
+run = "mise run verify"
+
+[tasks."guard:local"]
+description = "Reject local services under a production environment"
+hide = true
+run = "case \"$APP_ENV\" in local|dev|development) ;; *) echo 'Local services require the default or dev environment' >&2; exit 1 ;; esac"
