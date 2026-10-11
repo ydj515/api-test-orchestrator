@@ -15,5 +15,6 @@ tools:
   - spotbugs
   - jacoco
   - pmd
+  - spotless
 runtimes:
   - mise
