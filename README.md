@@ -106,3 +106,11 @@ mise -E dev run verify
 - `mise run bootstrap`은 프로젝트 초기 설정이다. OS package·dotfile·서비스를 관리하는 `mise bootstrap`은 개인 머신 설정에서 별도로 채택한다.
 
 하위 설정: `gateway`, `mock-rest-api-server`, `report-server`, `karate-tests`. 각 앱 디렉터리에서 같은 명령을 실행한다. 루트 bootstrap/verify가 하위 앱 전체를 자동 실행하지는 않는다.
+
+### Java formatting
+
+`./gradlew spotlessCheck` checks changed and new authored Java files across source sets
+and modules. `./gradlew spotlessApply` formats those files with pinned Google Java Format
+(AOSP, four-space indentation). Generated build output is excluded. `check` includes this
+gate. The fixed adoption commit in `ratchetFrom` preserves existing formatting; CI checks
+out full history so the baseline is always available. Existing static analysis remains enabled.

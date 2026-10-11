@@ -1,4 +1,6 @@
 [versions]
+spotless = "7.0.2"
+googleJavaFormat = "1.25.2"
 spring-boot = "3.5.8"
 spring-boot-report = "3.5.0"
 dependency-management = "1.1.7"
@@ -28,6 +30,7 @@ snakeyaml = { module = "org.yaml:snakeyaml" }
 karate = { module = "io.karatelabs:karate-junit5", version = "1.5.2" }
 
 [plugins]
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 spring-boot-report = { id = "org.springframework.boot", version.ref = "spring-boot-report" }
 dependency-management = { id = "io.spring.dependency-management", version.ref = "dependency-management" }

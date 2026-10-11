@@ -1,6 +1,7 @@
 import org.gradle.testing.jacoco.tasks.JacocoReport
 
 plugins {
+    alias(libs.plugins.spotless)
     base
     jacoco
     id("orchestrator.java-conventions") apply false
@@ -54,3 +55,19 @@ val jacocoRootReport by tasks.registering(JacocoReport::class) {
     }
 }
 tasks.named("check") { dependsOn(jacocoRootReport) }
+
+// Check changed/new Java files from this fixed adoption commit; CI fetches its history.
+spotless {
+    ratchetFrom("f4b2177b3e51ef05f8257458904a96114e21cffb")
+    java {
+        target("**/src/**/*.java")
+        targetExclude("**/build/**", "**/.gradle/**", "**/node_modules/**")
+        googleJavaFormat(libs.versions.googleJavaFormat.get()).aosp()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+tasks.named("check") {
+    dependsOn("spotlessCheck")
+}
